@@ -24,7 +24,9 @@ Le cœur du jeu est son **éditeur** et sa **communauté** : la communauté cons
   course / sprint, saut (dont saut long), **wallrun** (deux étages, avec apex), wallclimb, **vault** (plusieurs variantes), **relevé** (heave), **glissade** (slide), **amorti** (roll), **balance**, escalade (tuyaux/échelles), **coil**, springboard, **MAG rope** (swing / pull-up / pull-down), tyrolienne, swing.
 - **Aucun combat.** Le mouvement est le seul verbe ; pas de coup, pas de takedown.
 - Le **sprint est une jauge** (une réserve qui monte et descend), pas un simple booléen.
-- **Architecture de mouvement data-driven et extensible** : l'ajout ou la modification d'un mouvement doit être simple. Le modèle de référence est *sonde → décision → animation* (des détecteurs géométriques bon marché alimentent un « pilote » de mouvement), et non un contrôleur monolithique.
+- **Architecture de mouvement data-driven et extensible** : l'ajout ou la modification d'un mouvement doit être simple. Le modèle de référence est *sonde → décision → animation* (des détecteurs géométriques bon marché alimentent un « pilote » de mouvement), et non un contrôleur monolithique — validé par le modèle de Mirror's Edge, où chaque mouvement est un enregistrement de données (sondes à lancer, modificateurs de vitesse, durées d'animation, recharge).
+- **Déclenchement contextuel** : comme Mirror's Edge, seuls le saut et l'accroupi ont une touche dédiée ; wallrun, vault, relevé, glissade, balance et tyrolienne se déclenchent par le **contexte** (course, direction, surface rencontrée), pas par un bouton.
+- **Référence de tuning** : le modèle de mouvement et des valeurs réelles de **Mirror's Edge (2008)** sont documentés dans `docs/research/mirrors-edge-1-movement.md` — points de départ à re-tuner à l'échelle d'oryndra, pas à copier.
 
 ### Navigation & accessibilité
 
@@ -106,4 +108,4 @@ Un jeu de parkour simple à comprendre mais profond et fun, où la communauté c
 
 - Décisions d'architecture et de produit : `docs/adr/`.
 - Vocabulaire du projet : `GLOSSARY.md`.
-- Recherche sur Mirror's Edge Catalyst : `docs/research/`.
+- Recherche : `docs/research/` — inventaire des **systèmes** de Mirror's Edge Catalyst, et **modèle de mouvement** de Mirror's Edge (2008) (machine d'état `TdMove_*` + valeurs de tuning réelles).
