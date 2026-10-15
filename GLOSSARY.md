@@ -1,39 +1,39 @@
 # oryndra
 
-Jeu de parkour 3D inspiré de Mirror's Edge : espaces chronométrés, cartes communautaires, jeu seul ou en coopération.
+A 3D parkour game inspired by Mirror's Edge: timed spaces, community Maps, played solo or co-op.
 
-## Contenu & compétition
+## Content & competition
 
-**Carte** :
-L'environnement jouable d'oryndra, produit par l'éditeur ou par génération. Une carte héberge un ou plusieurs parcours.
-_Avoid_: map, niveau, level, monde
+**Map**:
+The playable environment of oryndra, produced by the editor or by generation. A Map hosts one or more Courses.
+_Avoid_: level, world, stage
 
-**Parcours** :
-Une route chronométrée (checkpoints + arrivée) tracée sur une carte ; l'unité de comparaison de temps.
-_Avoid_: course, tracé, route
+**Course**:
+A timed route (checkpoints + goal) laid out on a Map; the unit of time comparison.
+_Avoid_: track, path, race
 
-**Segment** :
-Un bloc de géométrie préfabriqué à connecteurs entrée/sortie, servant à composer les cartes (éditeur) et à générer les parcours (génération procédurale).
-_Avoid_: tile, module, prefab, bloc
+**Segment**:
+A prefabricated geometry block with entry/exit connectors, used to compose Maps (editor) and to generate Courses (procedural generation).
+_Avoid_: tile, module, prefab, block
 
-**Ghost** :
-Le replay semi-transparent d'un parcours, rejoué en parallèle de la tentative du joueur.
-_Avoid_: fantôme, replay, spectre
+**Ghost**:
+The semi-transparent replay of a Course, played back alongside the player's attempt.
+_Avoid_: replay, spectre, phantom
 
-## Mouvement
+## Movement
 
-**Flow** :
-L'état de course continue où la vitesse se maintient par l'enchaînement des mouvements, sans temps mort.
-_Avoid_: fluidité, rythme
+**Flow**:
+The state of continuous running where speed is maintained by chaining moves without dead time.
+_Avoid_: smoothness, rhythm
 
-**Relevé** (heave) :
-La traction qui hisse le joueur par-dessus un rebord. À ne pas confondre avec `Mantle`, qui désigne une API graphique et non un mouvement de parkour.
-_Avoid_: mantle
+**Heave**:
+The pull-up that hoists the player over a ledge. Not to be confused with `Mantle`, which names a graphics API and not a parkour move.
+_Avoid_: mantle, climb-up
 
-**Coil** :
-Une impulsion verticale déclenchée contre un support, qui propulse le joueur vers le haut.
-_Avoid_: ressort, spring
+**Coil**:
+A vertical impulse triggered against a support, launching the player upward.
+_Avoid_: spring, bounce
 
-**MAG rope** :
-Un grappin permettant de se balancer (swing) ou de se tracter (pull-up / pull-down) vers un point d'ancrage.
-_Avoid_: grappin, corde
+**MAG rope**:
+A grappling hook used to swing or to pull (pull-up / pull-down) toward an anchor point.
+_Avoid_: grapple, rope

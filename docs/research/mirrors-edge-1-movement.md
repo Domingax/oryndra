@@ -105,7 +105,7 @@ ME1's movement is a **stack-like state machine of `TdMove` objects**, not a mono
 ### 1.1 "Probe → decide → animate" is *literally* the data model
 
 Every move class declares **which geometric probes it runs**, as INI booleans. This is the exact
-architecture the PRD asks for ("sonde → décision → animation"):
+architecture the PRD asks for ("probe → decide → animate"):
 
 ```
 bCheckForGrab            – run the ledge-grab probe
@@ -188,7 +188,7 @@ UE3 last-wins, so the *second* block's `bCheckForGrab/bCheckForVaultOver` apply)
 | `TdMove_IntoGrab` ‡ | the **grab probe/transition**: align speed/angle, `GrabDesiredLedgeOffset=(X=30,Y=0,Z=92.8)`, "folded" near-ledge cases, impact tiers |
 | `TdMove_IntoGrabBot` ‡ | AI variant (`IntoGrabMaxAngle=90`) |
 | `TdMove_Grab` ‡ | the **hang**: `GrabMaxAngle=40`, `HangFreeZDistanceCheck=128`, 0.15 s redo time |
-| `TdMove_GrabPullUp` ‡ | the **heave/pull-up** = oryndra's *Relevé*: `GrabAllowedPullUpAngle=45` |
+| `TdMove_GrabPullUp` ‡ | the **heave/pull-up** = oryndra's *Heave*: `GrabAllowedPullUpAngle=45` |
 | `TdMove_GrabJump` ‡ | jump off a ledge hang (`GrabJumpOffZHeight=160`, push-away 200–400) |
 | `TdMove_GrabTransfer` ‡ | lateral hand-to-hand ledge transfer (`Allowed2DTransferDistance=260`, `AllowedZTransferDistance=140`) |
 | `TdMove_StandGrabHeaveBot` **[u-names]** | AI stand-grab-heave (only move class with surviving debug info: functions `FindClimbNotifiers`, `JumpInitiatedNotify`) |
@@ -945,12 +945,12 @@ Verified absent from ME1's complete name table (**[u-names]**: `magrope`, `mag_`
 1. ME1 is the **better tuning reference** (numbers exist) but Catalyst is the better **feature list**.
 2. ME1's single wall-run vs Catalyst's two-tier wall-run is a design choice, not an accident:
    two-tier = more skill expression + a readable apex. The PRD already asks for "wallrun (deux
-   étages, avec apex)" — that is Catalyst-flavoured, so it must be designed, not inherited.
+   "wallrun (two-tier, with an apex)" — that is Catalyst-flavoured, so it must be designed, not inherited.
 3. The vault system (7 height/speed-gated `VaultTypes` with IK offsets) is a directly reusable
    **data-driven table shape** for oryndra's "vault (plusieurs variantes)".
 4. Move-as-probe-flags (`bCheckForGrab`, `bCheckForVaultOver`, `bCheckForWallClimb`,
    `bCheckForEdgeInVelDir`) is the smallest possible embodiment of the PRD's
-   "sonde → décision → animation".
+   "probe → decide → animate".
 5. ME1's landing/slide/coil numbers give usable **first-playtest defaults** (see the appendix table).
 
 ---

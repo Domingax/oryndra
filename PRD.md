@@ -2,110 +2,110 @@
 
 ## 🎯 Concept
 
-Un jeu de **parkour 3D** nerveux, compétitif et créatif. Le joueur progresse dans des **Cartes** — faites main, communautaires, ou générées —, seul ou en coopération (jusqu'à 3), et y trace des **Parcours** chronométrés.
+A fast, competitive and creative **3D parkour** game. The player moves through **Maps** — handcrafted, community-made, or generated — alone or in co-op (up to 3), and lays out timed **Courses** on them.
 
-Deux façons de jouer, chacune **seul ou en équipe** :
-- **Pour le plaisir** — découvrir les cartes communautaires, explorer, jouer entre amis.
-- **Pour la compétition** — viser le meilleur temps, battre ses records et ceux des autres.
+Two ways to play, each **solo or in a team**:
+- **For fun** — discovering community Maps, exploring, playing with friends.
+- **For competition** — chasing the best time, beating one's own records and those of others.
 
-Le cœur du jeu est son **éditeur** et sa **communauté** : la communauté construit sa propre expérience à travers les cartes et leur partage. Vision : **« le Minecraft du parkour »**.
+The heart of the game is its **editor** and its **community**: the community builds its own experience through Maps and sharing. The vision: **"the Minecraft of parkour"**.
 
-## 👥 Public cible
+## 👥 Target audience
 
-- Joueurs amateurs de gameplay nerveux, fun et créatif.
-- Deux communautés : **compétiteurs** (temps, records) et **explorateurs** (découverte, jeu social).
-- Plateforme de départ : **PC** (Windows, Linux). Mac ensuite. Consoles/mobiles seulement en cas de succès.
+- Players who enjoy fast, fun and creative gameplay.
+- Two communities: **competitors** (times, records) and **explorers** (discovery, social play).
+- Launch platform: **PC** (Windows, Linux). Mac later. Consoles/mobile only if successful.
 
 ## 🕹 Gameplay
 
-### Mouvement — le cœur du jeu
+### Movement — the heart of the game
 
-- **Tous les mouvements de Mirror's Edge Catalyst** sont visés :
-  course / sprint, saut (dont saut long), **wallrun** (deux étages, avec apex), wallclimb, **vault** (plusieurs variantes), **relevé** (heave), **glissade** (slide), **amorti** (roll), **balance**, escalade (tuyaux/échelles), **coil**, springboard, **MAG rope** (swing / pull-up / pull-down), tyrolienne, swing.
-- **Aucun combat.** Le mouvement est le seul verbe ; pas de coup, pas de takedown.
-- Le **sprint est une jauge** (une réserve qui monte et descend), pas un simple booléen.
-- **Architecture de mouvement data-driven et extensible** : l'ajout ou la modification d'un mouvement doit être simple. Le modèle de référence est *sonde → décision → animation* (des détecteurs géométriques bon marché alimentent un « pilote » de mouvement), et non un contrôleur monolithique — validé par le modèle de Mirror's Edge, où chaque mouvement est un enregistrement de données (sondes à lancer, modificateurs de vitesse, durées d'animation, recharge).
-- **Déclenchement contextuel** : comme Mirror's Edge, seuls le saut et l'accroupi ont une touche dédiée ; wallrun, vault, relevé, glissade, balance et tyrolienne se déclenchent par le **contexte** (course, direction, surface rencontrée), pas par un bouton. Le **MAG rope** fait exception : capacité, touche dédiée.
-- **Référence de tuning** : le modèle de mouvement et des valeurs réelles de **Mirror's Edge (2008)** sont documentés dans `docs/research/mirrors-edge-1-movement.md` — points de départ à re-tuner à l'échelle d'oryndra, pas à copier.
+- **Every movement mechanic of Mirror's Edge Catalyst** is targeted:
+  run / sprint, jump (including long jump), **wallrun** (two-tier, with an apex), wallclimb, **vault** (several variants), **heave**, **slide**, **roll**, **balance**, climb (pipes/ladders), **coil**, springboard, **MAG rope** (swing / pull-up / pull-down), zipline, swing.
+- **No combat.** Movement is the only verb; no kick, no takedown.
+- **Sprint is a meter** (a reserve that builds and drains), not a plain boolean.
+- **Data-driven, extensible movement architecture**: adding or modifying a move must be simple. The reference model is *probe → decide → animate* (cheap geometric probes feed a movement "driver"), not a monolithic controller — validated by Mirror's Edge, where each move is a data record (probes to run, speed modifiers, animation times, cooldown).
+- **Contextual triggering**: as in Mirror's Edge, only **jump** and **crouch** have a dedicated key; wallrun, vault, heave, slide, balance and zipline trigger from **context** (speed, direction, surface encountered), not from a button. The **MAG rope** is the exception: a capability, with a dedicated key.
+- **Tuning reference**: the movement model and real values of **Mirror's Edge (2008)** are documented in `docs/research/mirrors-edge-1-movement.md` — starting points to re-tune to oryndra's scale, not to copy.
 
-### Navigation & accessibilité
+### Navigation & accessibility
 
-- **Aucune aide à la navigation** : ni chemin surligné, ni flèches. **Trouver son chemin est une mécanique.**
-- **Tolérance d'input en socle**, non optionnelle (coyote time, marge de saisie des rebords) : sans elle, le jeu paraît cassé, il n'est pas plus difficile.
-- « Accessible » signifie **mécaniques simples à comprendre**, jamais **niveaux faciles**.
+- **No navigation aid**: no highlighted path, no arrows. **Reading the environment is a mechanic.**
+- **Baseline input tolerance**, not optional (coyote time, ledge-grab margin): without it the game *seems* broken; it is not made easier.
+- "Accessible" means **easy-to-understand mechanics**, never **easy levels**.
 
-### Boucle de jeu & compétition
+### Game loop & competition
 
-- Un **Parcours** est une route chronométrée (checkpoints + arrivée) tracée sur une **Carte**.
-- **Ghost** : le replay semi-transparent d'une course, rejoué en parallèle.
-  - Au MVP : **record personnel** + **ghost de référence de l'auteur**, tous deux hors-ligne.
-  - Plus tard : ghosts d'amis et des classements en ligne.
-- **Progression** : tous les mouvements sont **disponibles dès le départ** (équité compétitive) ; la progression récompense la **maîtrise** (médailles par parcours, records), pas le déblocage de capacités.
-- Classements en ligne, mode équipe et médailles avancées arrivent après le MVP et la coop.
+- A **Course** is a timed route (checkpoints + goal) laid out on a **Map**.
+- **Ghost**: the semi-transparent replay of a run, played back alongside.
+  - At MVP: **personal best** + **author's reference Ghost**, both offline.
+  - Later: friends' Ghosts and online leaderboards.
+- **Progression**: every move is **available from the start** (competitive fairness); progression rewards **mastery** (medals per Course, records), not unlocking abilities.
+- Online leaderboards, team mode and advanced medals arrive after the MVP and co-op.
 
-### Éditeur intégré
+### Built-in editor
 
-- **Composer** des cartes à partir de **Segments** préfabriqués (accrochage, connecteurs entrée/sortie).
-- Placer les **éléments de gameplay** : spawn, checkpoints, arrivée, dangers, objets mobiles.
-- **Tester** la carte immédiatement, dans l'éditeur.
-- **Exporter / partager** (fichier de carte ouvert, puis miroir Steam Workshop).
-- La modélisation de géométrie libre (CSG) est hors périmètre initial.
+- **Compose** Maps from prefabricated **Segments** (snapping, entry/exit connectors).
+- Place **gameplay elements**: spawn, checkpoints, goal, hazards, moving objects.
+- **Test** the Map immediately, inside the editor.
+- **Export / share** (an open Map file, then a Steam Workshop mirror).
+- Free-form geometry modelling (CSG) is out of the initial scope.
 
-### Génération procédurale
+### Procedural generation
 
-- Objectif (phase Alpha) : **assemblage de Segments préfabriqués** avec connecteurs, garantissant un parcours jouable — **pas** de génération de géométrie libre.
-- Elle réutilise **le même vocabulaire que l'éditeur** (un seul système de Segments).
+- Goal (Alpha phase): **assembling prefabricated Segments** with connectors, guaranteeing a playable Course — **no** free-form geometry generation.
+- It reuses **the same vocabulary as the editor** (a single Segment system).
 
-### Coopération (jusqu'à 3) — teamplay
+### Co-op (up to 3) — teamplay
 
-- La coop n'est **pas** une course parallèle : elle repose sur des **mécaniques dédiées** où les joueurs s'entraident pour franchir des obstacles **infranchissables seul** (courte échelle/boost, contrepoids, lancer, slingshot, échelle humaine, rattrapage, relais).
-- Chaque mécanique est **réciproque** (celui qui aide doit pouvoir progresser à son tour).
-- Les parcours qui en dépendent sont **identifiés comme coop** ; une variante solo est fournie quand c'est possible.
-- Détail des mécaniques **à prototyper** ; la coop arrive **après** le moveset complet et le PCG.
+- Co-op is **not** a parallel race: it rests on **dedicated mechanics** where players help each other clear obstacles **impossible alone** (leg-up/boost, counterweight, throw, slingshot, human ladder, catch, relay).
+- Every mechanic is **reciprocal** (the helper must be able to progress in turn).
+- Courses that depend on it are **flagged as co-op**; a solo variant is provided where possible.
+- The mechanics' detail is **to be prototyped**; co-op arrives **after** the full move set and procedural generation.
 
-## 🎨 Direction artistique & sonore
+## 🎨 Art & sound direction
 
-- **Rendu stylisé (cell-shading)** : simple, intemporel, compatible configs modestes.
-- La **couleur et le contour** portent la lisibilité des surfaces praticables (ce qui se grimpe, ce qui se traverse) — pas le détail des textures.
-- Univers **modulable** selon les cartes, **sans narration imposée**.
-- **Son** :
-  - Feedback SFX **par mouvement et par matériau** (sprint, wallrun, glisse, réception).
-  - **Musique adaptative légère** pilotée par le *flow* (l'intensité monte avec la vitesse et l'enchaînement).
-  - Un **mixer « parcours »** qui met le rythme en avant.
-  - Effets « fun » discrets.
+- **Stylised rendering (cel shading)**: simple, timeless, friendly to modest configurations.
+- **Colour and outline** carry the readability of traversable surfaces (what can be climbed, what can be crossed) — not texture detail.
+- A **modular** universe per Map, **with no imposed narration**.
+- **Sound**:
+  - SFX feedback **per move and per material** (sprint, wallrun, slide, landing).
+  - **Light adaptive music** driven by *Flow* (intensity rises with speed and chaining).
+  - A dedicated **"Course" mixer** that foregrounds the rhythm.
+  - Discreet "fun" effects.
 
-## ⚙️ Technique
+## ⚙️ Technical
 
-- **Moteur : Godot 4.x**, langage **C# (.NET) en priorité** (GDScript possible pour de petits scripts).
-- Cibles : **Windows + Linux** d'abord, Mac ensuite.
-- **60 FPS minimum** en 1080p sur config modeste.
-- **Architecture modulaire**, le gameplay core d'abord ; le multijoueur (coop P2P / hébergement local) ensuite.
-- **Formats ouverts** : les cartes sont des fichiers redistribuables (voir la licence).
+- **Engine: Godot 4.x**, language **C# (.NET) first** (GDScript possible for small scripts).
+- Targets: **Windows + Linux** first, Mac later.
+- **60 FPS minimum** at 1080p on a modest configuration.
+- **Modular architecture**, gameplay core first; multiplayer (P2P co-op / local hosting) later.
+- **Open formats**: Maps are redistributable files (see the licence).
 
 ## 📦 Production & Business
 
-- Développement **solo indé**, périmètre maîtrisé, priorité au plaisir de mouvement.
-- **Open source**, aucune ambition de revenu :
-  - **Code : GPL-3.0** ; **contenu (assets + cartes) : CC BY-SA 4.0**.
-  - Une **charte du hub** (conditions d'utilisation, pas une licence) garde les cartes publiées **libres et gratuites** ; retrait si mise derrière un péage.
-- **Distribution gratuite** : itch.io, Steam (+ Steam Workshop). Les cartes vivent dans un **dépôt ouvert** (fichiers versionnés) avec **miroir Workshop** pour la découverte.
-- **Pas de monétisation** ; d'éventuels cosmétiques seraient des **déblocages gratuits / récompenses communautaires**.
+- **Solo indie** development, controlled scope, priority on the pleasure of movement.
+- **Open source**, no revenue ambition:
+  - **Code: GPL-3.0**; **content (assets + Maps): CC BY-SA 4.0**.
+  - A **hub charter** (terms of use, not a licence) keeps published Maps **free and open**; a Map placed behind a paywall is taken down.
+- **Free distribution**: itch.io, Steam (+ Steam Workshop). Maps live in an **open repository** (versioned files) with a **Workshop mirror** for discovery.
+- **No monetization**; any cosmetics would be **free unlocks / community rewards**.
 
 ### Roadmap
 
-1. **MVP** — 1-2 cartes faites main + **carte d'entraînement** (tutoriel) ; **socle de mouvement** (course/sprint, saut, wallrun, vault, glissade, relevé, amorti) ; boucle **time-trial avec ghost** (record perso + ghost de l'auteur, hors-ligne) ; **éditeur minimal** (poser des Segments + éléments de gameplay + tester) ; **solo** uniquement.
-2. **Alpha** — **moveset complet** (MAG rope, coil, tyrolienne, balance, escalade, springboard…) et **génération procédurale** (assemblage de Segments).
-3. **Beta** — **coop jusqu'à 3** (teamplay) et **partage des cartes** (dépôt ouvert + Workshop).
-4. **Release** — classements en ligne, mode équipe, modération/curation, polish visuel et sonore, extensions de plateformes.
+1. **MVP** — 1-2 handcrafted Maps + the **Training Map** (tutorial); **movement core** (run/sprint, jump, wallrun, vault, slide, heave, roll); the **time-trial loop with Ghosts** (personal best + author's Ghost, offline); a **minimal editor** (place Segments + gameplay elements + test); **solo** only.
+2. **Alpha** — **full move set** (MAG rope, coil, zipline, balance, climb, springboard…) and **procedural generation** (Segment assembly).
+3. **Beta** — **co-op up to 3** (teamplay) and **Map sharing** (open repository + Workshop).
+4. **Release** — online leaderboards, team mode, moderation/curation, visual and sound polish, platform extensions.
 
 ## 🚀 Vision
 
-Un jeu de parkour simple à comprendre mais profond et fun, où la communauté construit sa propre expérience par l'éditeur et le partage. Un jeu qui vit autant par le **challenge compétitif** que par le **plaisir créatif et social** — le Minecraft du parkour.
+A parkour game that is simple to understand yet deep and fun, where the community builds its own experience through the editor and sharing. A game that lives as much through **competitive challenge** as through the **creative and social pleasure** of play — the Minecraft of parkour.
 
 ---
 
-## 📎 Décisions & vocabulaire
+## 📎 Decisions & vocabulary
 
-- Décisions d'architecture et de produit : `docs/adr/`.
-- Vocabulaire du projet : `GLOSSARY.md`.
-- Recherche : `docs/research/` — inventaire des **systèmes** de Mirror's Edge Catalyst, et **modèle de mouvement** de Mirror's Edge (2008) (machine d'état `TdMove_*` + valeurs de tuning réelles).
+- Architecture and product decisions: `docs/adr/`.
+- Project vocabulary: `GLOSSARY.md`.
+- Research: `docs/research/` — an inventory of the **systems** of Mirror's Edge Catalyst, and the **movement model** of Mirror's Edge (2008) (`TdMove_*` state machine + real tuning values).

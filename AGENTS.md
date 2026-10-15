@@ -1,7 +1,7 @@
 # oryndra
 
-Jeu de parkour 3D (inspiré de Mirror's Edge). Moteur **Godot**, langage **GDScript**.
-Le besoin produit est décrit dans `PRD.md`.
+A 3D parkour game (inspired by Mirror's Edge). Engine: **Godot**, language: **C# (.NET)**.
+The product requirements are described in `PRD.md`.
 
 ## Agent skills
 
