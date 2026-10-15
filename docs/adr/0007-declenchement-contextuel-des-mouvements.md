@@ -1,6 +1,6 @@
 # Déclenchement contextuel des mouvements
 
-Les mouvements de traversée se déclenchent par le **contexte** — vitesse, direction, surface rencontrée — et non par une touche dédiée. Seuls le **saut** et l'**accroupi** ont une touche. C'est le modèle de Mirror's Edge : le joueur exprime son intention par le mouvement, et le jeu choisit le geste. Les gestes « capacitaires » qui ne sont pas des réflexes de course (typiquement le **MAG rope**) pourront avoir une touche dédiée.
+Les mouvements de traversée se déclenchent par le **contexte** — vitesse, direction, surface rencontrée — et non par une touche dédiée. Seuls le **saut** et l'**accroupi** ont une touche. C'est le modèle de Mirror's Edge : le joueur exprime son intention par le mouvement, et le jeu choisit le geste. Le **MAG rope** fait exception : c'est une **capacité** (pas un réflexe de course) et il a une **touche dédiée**, comme dans Catalyst.
 
 ## Options considérées et écartées
 

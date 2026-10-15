@@ -25,7 +25,7 @@ Le cœur du jeu est son **éditeur** et sa **communauté** : la communauté cons
 - **Aucun combat.** Le mouvement est le seul verbe ; pas de coup, pas de takedown.
 - Le **sprint est une jauge** (une réserve qui monte et descend), pas un simple booléen.
 - **Architecture de mouvement data-driven et extensible** : l'ajout ou la modification d'un mouvement doit être simple. Le modèle de référence est *sonde → décision → animation* (des détecteurs géométriques bon marché alimentent un « pilote » de mouvement), et non un contrôleur monolithique — validé par le modèle de Mirror's Edge, où chaque mouvement est un enregistrement de données (sondes à lancer, modificateurs de vitesse, durées d'animation, recharge).
-- **Déclenchement contextuel** : comme Mirror's Edge, seuls le saut et l'accroupi ont une touche dédiée ; wallrun, vault, relevé, glissade, balance et tyrolienne se déclenchent par le **contexte** (course, direction, surface rencontrée), pas par un bouton.
+- **Déclenchement contextuel** : comme Mirror's Edge, seuls le saut et l'accroupi ont une touche dédiée ; wallrun, vault, relevé, glissade, balance et tyrolienne se déclenchent par le **contexte** (course, direction, surface rencontrée), pas par un bouton. Le **MAG rope** fait exception : capacité, touche dédiée.
 - **Référence de tuning** : le modèle de mouvement et des valeurs réelles de **Mirror's Edge (2008)** sont documentés dans `docs/research/mirrors-edge-1-movement.md` — points de départ à re-tuner à l'échelle d'oryndra, pas à copier.
 
 ### Navigation & accessibilité
