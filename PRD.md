@@ -1,58 +1,109 @@
-# Product Requirements Document – Jeu de Parkour 3D
+# Product Requirements Document – oryndra
 
 ## 🎯 Concept
-Un jeu de parkour 3D dynamique, accessible et créatif.  
-Le joueur progresse dans des environnements générés ou créés par la communauté, seul ou en petite équipe (jusqu’à 3).  
 
-Deux approches principales :
-- **Challenge compétitif** : speedrun, chronos, records, classements.  
-- **Fun & exploration** : découverte de maps, jeu casual entre amis.  
+Un jeu de **parkour 3D** nerveux, compétitif et créatif. Le joueur progresse dans des **Cartes** — faites main, communautaires, ou générées —, seul ou en coopération (jusqu'à 3), et y trace des **Parcours** chronométrés.
 
----
+Deux façons de jouer, chacune **seul ou en équipe** :
+- **Pour le plaisir** — découvrir les cartes communautaires, explorer, jouer entre amis.
+- **Pour la compétition** — viser le meilleur temps, battre ses records et ceux des autres.
+
+Le cœur du jeu est son **éditeur** et sa **communauté** : la communauté construit sa propre expérience à travers les cartes et leur partage. Vision : **« le Minecraft du parkour »**.
 
 ## 👥 Public cible
-- Joueurs jeunes / amateurs de gameplay nerveux, fun et créatif.  
-- Deux communautés potentielles : compétiteurs (records, ladders) et explorateurs (fun, découverte).  
-- Plateforme de départ : **PC (Windows/Linux, si possible Mac)**. Consoles et mobiles en extension si succès.  
 
----
+- Joueurs amateurs de gameplay nerveux, fun et créatif.
+- Deux communautés : **compétiteurs** (temps, records) et **explorateurs** (découverte, jeu social).
+- Plateforme de départ : **PC** (Windows, Linux). Mac ensuite. Consoles/mobiles seulement en cas de succès.
 
 ## 🕹 Gameplay
-- Mécaniques principales : course, sauts, wallruns, vaults, glissades.  
-- Progression basée sur la maîtrise et le skill, sans narration imposée.  
-- **Éditeur de maps intégré**, partage via workshop.  
-- **Solo & coop 3 joueurs max** (hébergement local, style Minecraft early).  
 
----
+### Mouvement — le cœur du jeu
+
+- **Tous les mouvements de Mirror's Edge Catalyst** sont visés :
+  course / sprint, saut (dont saut long), **wallrun** (deux étages, avec apex), wallclimb, **vault** (plusieurs variantes), **relevé** (heave), **glissade** (slide), **amorti** (roll), **balance**, escalade (tuyaux/échelles), **coil**, springboard, **MAG rope** (swing / pull-up / pull-down), tyrolienne, swing.
+- **Aucun combat.** Le mouvement est le seul verbe ; pas de coup, pas de takedown.
+- Le **sprint est une jauge** (une réserve qui monte et descend), pas un simple booléen.
+- **Architecture de mouvement data-driven et extensible** : l'ajout ou la modification d'un mouvement doit être simple. Le modèle de référence est *sonde → décision → animation* (des détecteurs géométriques bon marché alimentent un « pilote » de mouvement), et non un contrôleur monolithique.
+
+### Navigation & accessibilité
+
+- **Aucune aide à la navigation** : ni chemin surligné, ni flèches. **Trouver son chemin est une mécanique.**
+- **Tolérance d'input en socle**, non optionnelle (coyote time, marge de saisie des rebords) : sans elle, le jeu paraît cassé, il n'est pas plus difficile.
+- « Accessible » signifie **mécaniques simples à comprendre**, jamais **niveaux faciles**.
+
+### Boucle de jeu & compétition
+
+- Un **Parcours** est une route chronométrée (checkpoints + arrivée) tracée sur une **Carte**.
+- **Ghost** : le replay semi-transparent d'une course, rejoué en parallèle.
+  - Au MVP : **record personnel** + **ghost de référence de l'auteur**, tous deux hors-ligne.
+  - Plus tard : ghosts d'amis et des classements en ligne.
+- **Progression** : tous les mouvements sont **disponibles dès le départ** (équité compétitive) ; la progression récompense la **maîtrise** (médailles par parcours, records), pas le déblocage de capacités.
+- Classements en ligne, mode équipe et médailles avancées arrivent après le MVP et la coop.
+
+### Éditeur intégré
+
+- **Composer** des cartes à partir de **Segments** préfabriqués (accrochage, connecteurs entrée/sortie).
+- Placer les **éléments de gameplay** : spawn, checkpoints, arrivée, dangers, objets mobiles.
+- **Tester** la carte immédiatement, dans l'éditeur.
+- **Exporter / partager** (fichier de carte ouvert, puis miroir Steam Workshop).
+- La modélisation de géométrie libre (CSG) est hors périmètre initial.
+
+### Génération procédurale
+
+- Objectif (phase Alpha) : **assemblage de Segments préfabriqués** avec connecteurs, garantissant un parcours jouable — **pas** de génération de géométrie libre.
+- Elle réutilise **le même vocabulaire que l'éditeur** (un seul système de Segments).
+
+### Coopération (jusqu'à 3) — teamplay
+
+- La coop n'est **pas** une course parallèle : elle repose sur des **mécaniques dédiées** où les joueurs s'entraident pour franchir des obstacles **infranchissables seul** (courte échelle/boost, contrepoids, lancer, slingshot, échelle humaine, rattrapage, relais).
+- Chaque mécanique est **réciproque** (celui qui aide doit pouvoir progresser à son tour).
+- Les parcours qui en dépendent sont **identifiés comme coop** ; une variante solo est fournie quand c'est possible.
+- Détail des mécaniques **à prototyper** ; la coop arrive **après** le moveset complet et le PCG.
 
 ## 🎨 Direction artistique & sonore
-- Style **simple, intemporel, stylisé (type cell-shading)** → facilite la longévité et la compatibilité technique.  
-- Univers modulable selon les maps créées.  
-- **Sons dynamiques** : feedbacks clairs, touches d’adaptatif, effets fun → immersion & plaisir de jeu.  
 
----
+- **Rendu stylisé (cell-shading)** : simple, intemporel, compatible configs modestes.
+- La **couleur et le contour** portent la lisibilité des surfaces praticables (ce qui se grimpe, ce qui se traverse) — pas le détail des textures.
+- Univers **modulable** selon les cartes, **sans narration imposée**.
+- **Son** :
+  - Feedback SFX **par mouvement et par matériau** (sprint, wallrun, glisse, réception).
+  - **Musique adaptative légère** pilotée par le *flow* (l'intensité monte avec la vitesse et l'enchaînement).
+  - Un **mixer « parcours »** qui met le rythme en avant.
+  - Effets « fun » discrets.
 
 ## ⚙️ Technique
-- **Moteur : Godot**.  
-- **Langage : GDScript** (simplicité, rapidité) + possibilité d’extensions C# si besoin.  
-- **Performance : 60 FPS minimum** sur configs modestes.  
-- Architecture rapide et modulaire → gameplay core en priorité, multijoueur ensuite.  
 
----
+- **Moteur : Godot 4.x**, langage **C# (.NET) en priorité** (GDScript possible pour de petits scripts).
+- Cibles : **Windows + Linux** d'abord, Mac ensuite.
+- **60 FPS minimum** en 1080p sur config modeste.
+- **Architecture modulaire**, le gameplay core d'abord ; le multijoueur (coop P2P / hébergement local) ensuite.
+- **Formats ouverts** : les cartes sont des fichiers redistribuables (voir la licence).
 
 ## 📦 Production & Business
-- **Dév. solo indé** → périmètre restreint, priorité au gameplay fun.  
-- Distribution : **Steam (avec Workshop)** + Itch.io.  
-- Modèle : Early Access petit prix, ou gratuit au départ → cosmétiques possibles ensuite.  
+
+- Développement **solo indé**, périmètre maîtrisé, priorité au plaisir de mouvement.
+- **Open source**, aucune ambition de revenu :
+  - **Code : GPL-3.0** ; **contenu (assets + cartes) : CC BY-SA 4.0**.
+  - Une **charte du hub** (conditions d'utilisation, pas une licence) garde les cartes publiées **libres et gratuites** ; retrait si mise derrière un péage.
+- **Distribution gratuite** : itch.io, Steam (+ Steam Workshop). Les cartes vivent dans un **dépôt ouvert** (fichiers versionnés) avec **miroir Workshop** pour la découverte.
+- **Pas de monétisation** ; d'éventuels cosmétiques seraient des **déblocages gratuits / récompenses communautaires**.
 
 ### Roadmap
-1. **MVP** : solo + loop parkour + éditeur basique.  
-2. **Alpha** : coop, partage de maps.  
-3. **Beta** : classements, polish visuel/sonore.  
-4. **Release** : stabilisation, extensions plateformes.  
+
+1. **MVP** — 1-2 cartes faites main + **carte d'entraînement** (tutoriel) ; **socle de mouvement** (course/sprint, saut, wallrun, vault, glissade, relevé, amorti) ; boucle **time-trial avec ghost** (record perso + ghost de l'auteur, hors-ligne) ; **éditeur minimal** (poser des Segments + éléments de gameplay + tester) ; **solo** uniquement.
+2. **Alpha** — **moveset complet** (MAG rope, coil, tyrolienne, balance, escalade, springboard…) et **génération procédurale** (assemblage de Segments).
+3. **Beta** — **coop jusqu'à 3** (teamplay) et **partage des cartes** (dépôt ouvert + Workshop).
+4. **Release** — classements en ligne, mode équipe, modération/curation, polish visuel et sonore, extensions de plateformes.
+
+## 🚀 Vision
+
+Un jeu de parkour simple à comprendre mais profond et fun, où la communauté construit sa propre expérience par l'éditeur et le partage. Un jeu qui vit autant par le **challenge compétitif** que par le **plaisir créatif et social** — le Minecraft du parkour.
 
 ---
 
-## 🚀 Vision
-Créer un jeu de parkour simple à prendre en main, mais profond et fun, où la communauté construit sa propre expérience à travers l’éditeur et le partage de maps.  
-Un jeu qui vit autant par le **challenge compétitif** que par le **plaisir créatif et social**, à l’image d’un Minecraft côté parkour.
+## 📎 Décisions & vocabulaire
+
+- Décisions d'architecture et de produit : `docs/adr/`.
+- Vocabulaire du projet : `GLOSSARY.md`.
+- Recherche sur Mirror's Edge Catalyst : `docs/research/`.
