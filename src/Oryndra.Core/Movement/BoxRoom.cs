@@ -1,18 +1,25 @@
 using System.Numerics;
 
-using Oryndra.Core.Movement;
-
-namespace Oryndra.Core.Tests.Support;
+namespace Oryndra.Core.Movement;
 
 /// <summary>
-/// A collision query made of blocks, used to test the movement seam without an engine.
+/// A collision query made of blocks: the core's reference geometry.
 /// </summary>
 /// <remarks>
+/// <para>
+/// It answers the seam without an engine, which makes it both the geometry the
+/// engine-free tests run against and the geometry a greybox is built from — the
+/// game asks it the same questions a test does, so a block behaves the same on a
+/// screen as in an assertion. A Map's own geometry (ticket #5) will answer the
+/// seam in its place; the seam does not move.
+/// </para>
+/// <para>
 /// The implementation is deliberately blunt: it resolves one axis at a time and
 /// clamps the moving body against every block it would cross. That is enough to
 /// answer the questions the simulation asks, and being immune to tunnelling means
 /// the fuzz harness can use it as the authority on "did the actor stay outside
 /// the geometry".
+/// </para>
 /// </remarks>
 public sealed class BoxRoom : ICollisionQuery
 {

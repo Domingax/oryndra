@@ -23,7 +23,14 @@ public readonly record struct InputFrame
     /// <summary>Gets the facing direction in radians, where 0 faces +Z.</summary>
     public float Yaw { get; init; }
 
-    /// <summary>Gets a value indicating whether the jump command is held this tick.</summary>
+    /// <summary>
+    /// Gets a value indicating whether the player pressed jump during this tick.
+    /// </summary>
+    /// <remarks>
+    /// A press, not a held state: one press is one jump. The engine layer is what
+    /// turns a held key into a press; a frame that said "still held" would make the
+    /// same jump fire on every tick of the coyote window.
+    /// </remarks>
     public bool Jump { get; init; }
 
     /// <summary>
@@ -34,6 +41,13 @@ public readonly record struct InputFrame
     /// Yaw 0 faces +Z, and a positive yaw turns towards +X. The heading lives here
     /// rather than in the simulation so that Ghosts, tests and presentation all
     /// read the same direction out of the same input.
+    /// <para>
+    /// Right is right as the player sees it, which is the corner that surprises:
+    /// looking along +Z, with +Y up, the hand on the right of a first-person view is
+    /// -X. The vector is the facing turned a quarter turn the same way, so
+    /// <c>Cross(WishDirection(forward), UnitY)</c> is the right one — the engine
+    /// layer does not have to re-derive the convention as it converts a stick.
+    /// </para>
     /// </remarks>
     public Vector3 WishDirection
     {
@@ -49,9 +63,9 @@ public readonly record struct InputFrame
             axis /= magnitude;
             var (sin, cos) = MathF.SinCos(Yaw);
             return new Vector3(
-                (axis.X * cos) + (axis.Y * sin),
+                (axis.Y * sin) - (axis.X * cos),
                 0f,
-                (axis.Y * cos) - (axis.X * sin));
+                (axis.Y * cos) + (axis.X * sin));
         }
     }
 

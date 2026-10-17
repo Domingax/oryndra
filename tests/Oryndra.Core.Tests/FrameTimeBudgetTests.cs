@@ -3,8 +3,6 @@ using System.Numerics;
 
 using Oryndra.Core.Movement;
 
-using Oryndra.Core.Tests.Support;
-
 namespace Oryndra.Core.Tests;
 
 /// <summary>

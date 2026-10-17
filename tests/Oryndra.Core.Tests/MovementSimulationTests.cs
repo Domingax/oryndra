@@ -50,18 +50,18 @@ public sealed class MovementSimulationTests
     }
 
     [Fact]
-    public void Advance_WithSustainedInput_ReachesTheTunedSpeed()
+    public void Advance_WithSustainedInput_ReachesTheRunBand()
     {
         var simulation = new MovementSimulation(BoxRoom.Room(halfWidth: 20f), ActorState.StandingAt(Vector3.Zero));
 
-        var state = simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 120);
+        var state = simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 60);
 
-        Nearly.Equal(MovementTuning.Default.MoveSpeed, state.Velocity.Length(), "the actor should be at full speed");
-        Nearly.Equal(MovementTuning.Default.MoveSpeed, state.Velocity.Z, "full speed should be spent going forwards");
+        Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Length(), "the actor should be at full speed");
+        Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Z, "full speed should be spent going forwards");
     }
 
     [Fact]
-    public void Advance_WhenJumpIsHeld_LeavesTheGround()
+    public void Advance_WhenJumpIsPressed_LeavesTheGround()
     {
         var simulation = new MovementSimulation(BoxRoom.Room(), ActorState.StandingAt(Vector3.Zero));
 
@@ -79,7 +79,7 @@ public sealed class MovementSimulationTests
         var room = BoxRoom.Room(halfWidth: 2f);
         var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(1f, 0f, 0f)), tuning);
 
-        var state = simulation.RunFor(Simulate.Moving(right: 1f, forward: 0f), ticks: 120);
+        var state = simulation.RunFor(Simulate.RunningTowards(MathF.PI / 2f), ticks: 120);
 
         Nearly.Equal(2f - tuning.Body.Radius, state.Position.X, "the body should stop with its face on the wall");
         Assert.False(room.Overlaps(state.Position, tuning.Body), "the actor must not end up inside the wall");

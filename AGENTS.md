@@ -7,8 +7,8 @@ The product requirements are described in `PRD.md`.
 
 | Path | What it is |
 |---|---|
-| `src/Oryndra.Core` | Engine-agnostic C# library: the movement simulation and its seam (`ICollisionQuery`). References no Godot. |
-| `game/` | The Godot 4.7 (.NET) project: **this is the directory to open in Godot** (Project Manager → Import → `game/`). Owns input, presentation and the collision query; no movement rules. |
+| `src/Oryndra.Core` | Engine-agnostic C# library: the movement simulation, its seam (`ICollisionQuery`) and the block geometry a greybox and the tests both build from. References no Godot. |
+| `game/` | The Godot 4.7 (.NET) project: **this is the directory to open in Godot** (Project Manager → Import → `game/`). Owns input, presentation and the greybox geometry; no movement rules. |
 | `tests/Oryndra.Core.Tests` | xUnit tests of the core: no engine, no display. |
 | `tests/Oryndra.Game.Tests` | gdUnit4Net tests that run inside a headless Godot. |
 

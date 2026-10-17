@@ -37,3 +37,19 @@ _Avoid_: spring, bounce
 **MAG rope**:
 A grappling hook used to swing or to pull (pull-up / pull-down) toward an anchor point.
 _Avoid_: grapple, rope
+
+**Gait**:
+The speed band the actor moves in — idle, walk, run or sprint — decided each tick from how far the player pushes the stick and what the sprint reserve allows. Presentation, animation and sound read it rather than inferring a band from the velocity.
+_Avoid_: speed, pace, mode
+
+**Sprint reserve**:
+The meter that builds while the actor runs on the ground and drains while it sprints; a full reserve is what turns a run into a sprint. A reserve rather than a held button, so that speed rewards clean running.
+_Avoid_: stamina, sprint bar, sprint button
+
+**Input tolerance**:
+The invisible margin that keeps a precise player from feeling the game is broken when a press just misses a ledge or the ground. Always on, and never a difficulty setting.
+_Avoid_: forgiveness, assist, difficulty
+
+**Coyote time**:
+The part of the input tolerance that lets a jump pressed just after leaving the ground still count. Spent by the jump that uses it, so one press is one jump.
+_Avoid_: jump buffer, grace period
