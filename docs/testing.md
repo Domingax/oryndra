@@ -106,7 +106,11 @@ touch. `./verify.sh` remains the command that decides.
 Where to read it:
 
 - **On the pull request.** SonarQube Cloud comments with the quality gate, the new
-  issues, and a link to the detailed analysis of that pull request.
+  issues, and a link to the detailed analysis of that pull request. That comment is
+  SonarQube Cloud's own, posted through its GitHub app: the `sonar` job uploads the
+  analysis, the app decorates the pull request. No comment, no link, and the
+  analysis is still there — the binding between the project and the repository is
+  the thing to look at.
 - **From an agent.** The SonarQube tools read the same project. The key is
   `Domingax_oryndra` in the `domingax` organization: `search_my_sonarqube_projects`
   finds it, `get_project_quality_gate_status` and `search_sonar_issues_in_projects`
