@@ -139,7 +139,7 @@ public static class SimulationFuzzer
 
             for (var index = 0; index < settings.Ticks && violations.Count < settings.MaxViolations; index++)
             {
-                var input = nextInput();
+                InputFrame input = nextInput();
                 var before = simulation.State;
                 var after = simulation.Advance(input, settings.DeltaSeconds);
 

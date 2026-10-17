@@ -127,7 +127,7 @@ public sealed class MovementSimulationTests
             .Add(Box.FromCorners(new Vector3(4f, 0f, 4f), new Vector3(8f, 0.6f, 8f)));
         var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(8.399999f, 0f, 5.4f)));
 
-        var state = simulation.Advance(new InputFrame { Jump = true }, Tick);
+        ActorState state = simulation.Advance(new InputFrame { Jump = true }, Tick);
 
         Assert.True(state.Position.Y > 0f, $"the jump should leave the floor, was {state.Position}");
         Assert.True(state.Position.X > 0f, $"the actor must not be thrown out of the room, was {state.Position}");

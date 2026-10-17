@@ -116,61 +116,85 @@ public sealed class BoxRoom : ICollisionQuery
             return current;
         }
 
-        var candidate = current + delta;
         var volume = Box.BodyVolume(position, body);
-        var offsetLow = Component(volume.Min, axis) - current;
-        var offsetHigh = Component(volume.Max, axis) - current;
+        var sweep = new AxisSweep(
+            current,
+            current + delta,
+            delta,
+            Component(volume.Min, axis) - current,
+            Component(volume.Max, axis) - current);
 
         foreach (var solid in solids)
         {
-            if (!CrossesOnOtherAxes(volume, solid, axis))
+            if (CrossesOnOtherAxes(volume, solid, axis))
             {
-                continue;
-            }
-
-            var solidMin = Component(solid.Min, axis);
-            var solidMax = Component(solid.Max, axis);
-
-            // Only a face the body reaches from the outside stops it, and only when
-            // the move would actually cross that face. Both halves matter: a body
-            // standing against a block has its volume a hair inside it from the last
-            // tick's float error, and a body falling *past* a tall block is not
-            // standing on it. Without the first, a body pressed against a wall was
-            // resolved against the wall's far face — thrown onto its top, or across
-            // the level, with the throw fed back as speed. Without the second, a
-            // body in the air over a floor it has left is reported as grounded.
-            if (delta > 0f)
-            {
-                if (current + offsetHigh > solidMin)
-                {
-                    continue;
-                }
-
-                candidate = MathF.Min(candidate, solidMin - offsetHigh);
-            }
-            else
-            {
-                if (current + offsetLow < solidMax)
-                {
-                    continue;
-                }
-
-                var stop = solidMax - offsetLow;
-                if (candidate > stop)
-                {
-                    continue;
-                }
-
-                candidate = stop;
-                if (axis == Axis.Y)
-                {
-                    grounded = true;
-                }
+                sweep = StopAt(sweep, solid, axis, ref grounded);
             }
         }
 
-        return candidate;
+        return sweep.Candidate;
     }
+
+    /// <summary>
+    /// Narrows a move to a block's face, when that block stops it.
+    /// </summary>
+    /// <param name="sweep">Where the body's faces are, and where the move would take them.</param>
+    /// <param name="solid">The block the body crosses on the other axes.</param>
+    /// <param name="axis">The axis being resolved.</param>
+    /// <param name="grounded">Set when a downward move is stopped, meaning the actor stands on it.</param>
+    /// <returns>The move, narrowed if the block is in the way.</returns>
+    /// <remarks>
+    /// Only a face the body reaches from the outside stops it, and only when the move
+    /// would actually cross that face. Both halves matter: a body standing against a
+    /// block has its volume a hair inside it from the last tick's float error, and a
+    /// body falling *past* a tall block is not standing on it. Without the first, a
+    /// body pressed against a wall was resolved against the wall's far face — thrown
+    /// onto its top, or across the level, with the throw fed back as speed. Without
+    /// the second, a body in the air over a floor it has left is reported as grounded.
+    /// </remarks>
+    private static AxisSweep StopAt(AxisSweep sweep, Box solid, Axis axis, ref bool grounded)
+    {
+        var solidMin = Component(solid.Min, axis);
+        var solidMax = Component(solid.Max, axis);
+
+        if (sweep.Delta > 0f)
+        {
+            return sweep.Current + sweep.OffsetHigh > solidMin
+                ? sweep
+                : sweep with { Candidate = MathF.Min(sweep.Candidate, solidMin - sweep.OffsetHigh) };
+        }
+
+        if (sweep.Current + sweep.OffsetLow < solidMax)
+        {
+            return sweep;
+        }
+
+        var stop = solidMax - sweep.OffsetLow;
+        if (sweep.Candidate > stop)
+        {
+            return sweep;
+        }
+
+        if (axis == Axis.Y)
+        {
+            grounded = true;
+        }
+
+        return sweep with { Candidate = stop };
+    }
+
+    /// <summary>One axis of one move: where the body's faces are, and where they would go.</summary>
+    /// <param name="Current">The body's position on the axis, before the move.</param>
+    /// <param name="Candidate">Where the move would put it.</param>
+    /// <param name="Delta">How far the move asks to travel.</param>
+    /// <param name="OffsetLow">The body's low face, relative to its position.</param>
+    /// <param name="OffsetHigh">The body's high face, relative to its position.</param>
+    private readonly record struct AxisSweep(
+        float Current,
+        float Candidate,
+        float Delta,
+        float OffsetLow,
+        float OffsetHigh);
 
     private static bool CrossesOnOtherAxes(Box volume, Box solid, Axis axis) => axis switch
     {

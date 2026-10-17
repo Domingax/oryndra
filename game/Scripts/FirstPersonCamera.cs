@@ -104,7 +104,7 @@ public partial class FirstPersonCamera : Camera3D
         // cycle driven by the distance covered. Only while the actor is on the
         // ground: in the air there is nothing to step with. It fades rather than
         // switching, or leaving the ground snaps the view down two centimetres.
-        var riding = current.Grounded && speed > 0.1f;
+        bool riding = current.Grounded && speed > 0.1f;
         if (riding)
         {
             bobPhase = Mathf.PosMod(bobPhase + ((float)(speed * delta) / BobStride), 1f);
@@ -112,7 +112,7 @@ public partial class FirstPersonCamera : Camera3D
 
         bobWeight = Mathf.MoveToward(bobWeight, riding ? 1f : 0f, (float)delta / BobFadeSeconds);
 
-        var bob = Mathf.Sin(bobPhase * Mathf.Tau) * BobAmplitude * bobWeight;
+        float bob = Mathf.Sin(bobPhase * Mathf.Tau) * BobAmplitude * bobWeight;
 
         Vector3 eye = feet.ToGodot();
         eye.Y += EyeHeight + bob;
@@ -128,7 +128,7 @@ public partial class FirstPersonCamera : Camera3D
         // its head ride is a spring. So the view is eased towards what the speed asks
         // for rather than following it — which is also what makes it answer to
         // acceleration instead of to speed.
-        var target = RestingFov + (FovGain * Mathf.Clamp(speed / Tuning.SprintSpeed, 0f, 1f));
+        float target = RestingFov + (FovGain * Mathf.Clamp(speed / Tuning.SprintSpeed, 0f, 1f));
         fov = Mathf.MoveToward(fov, target, FovRate * (float)delta);
         Fov = fov;
     }

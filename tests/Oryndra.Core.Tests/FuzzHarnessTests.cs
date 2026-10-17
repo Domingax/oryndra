@@ -25,9 +25,9 @@ public sealed class FuzzHarnessTests
         get
         {
             var data = new TheoryData<int, InputStyle>();
-            foreach (var seed in new[] { 1, 2, 3, 4, 5, 6, 7, 8 })
+            foreach (int seed in new[] { 1, 2, 3, 4, 5, 6, 7, 8 })
             {
-                foreach (var style in Enum.GetValues<InputStyle>())
+                foreach (InputStyle style in Enum.GetValues<InputStyle>())
                 {
                     data.Add(seed, style);
                 }
@@ -41,7 +41,7 @@ public sealed class FuzzHarnessTests
     [MemberData(nameof(SeedsAndStyles))]
     public void InputSequences_NeverBreakAnInvariant(int seed, InputStyle style)
     {
-        var run = SimulationFuzzer.Run(
+        FuzzRun run = SimulationFuzzer.Run(
             new FuzzSettings { Seed = seed, Style = style },
             FuzzRooms.WithAStep());
 
@@ -63,8 +63,8 @@ public sealed class FuzzHarnessTests
         // The soft-lock invariant, checked from the worst state a fuzz run can
         // leave behind: whatever the actor was doing, it must still be able to run
         // away in at least one direction.
-        var room = FuzzRooms.WithAStep();
-        var run = SimulationFuzzer.Run(new FuzzSettings { Seed = seed, Style = style, Ticks = 3_000 }, room);
+        BoxRoom room = FuzzRooms.WithAStep();
+        FuzzRun run = SimulationFuzzer.Run(new FuzzSettings { Seed = seed, Style = style, Ticks = 3_000 }, room);
         var last = run.States[^1];
 
         var travelled = new List<float>();
