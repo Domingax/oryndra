@@ -19,6 +19,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <!--
+      The coverage collector the Sonar job asks for (the `dotnet test` collector
+      "XPlat Code Coverage"). Without this package the collector is silently
+      skipped and the report measures nothing, so it is a dependency of the core
+      tests, not of the game: coverage is only claimed for the engine-agnostic
+      core (see docs/testing.md).
+    -->
+    <PackageReference Include="coverlet.collector" Version="10.1.0" PrivateAssets="all" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
   </ItemGroup>

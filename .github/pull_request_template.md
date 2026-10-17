@@ -1,5 +1,8 @@
 <!--
   Keep this short: what changed, why it matters, how it was proven.
+
+  Title it as a conventional commit — `type(scope): what changed` — because the
+  title is the commit that lands on the default branch.
 -->
 
 ## What

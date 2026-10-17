@@ -18,9 +18,12 @@ obj/
 
 # Test run artifacts
 # gdUnit4 writes its own runner into the Godot test project on every test run,
-# and the run settings write reports next to it.
+# and the run settings write reports next to it. `coverage/` is where the `sonar`
+# CI job (and anyone running the core tests with the collector) puts the
+# coverage report it uploads.
 tests/Oryndra.Game.Tests/gdunit4_testadapter_v*/
 tests/**/TestResults/
+coverage/
 
 # OS / editor cruft
 .DS_Store

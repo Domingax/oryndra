@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  What the SonarQube Cloud analysis looks at, what it measures, and when it
+  fails the job (docs/adr/0010-sonar-analysis-as-a-gate.md).
+
+  This is the SonarScanner for .NET's own configuration file — not the
+  `sonar-project.properties` of the CLI scanner, which the .NET scanner does not
+  read at all. The `sonar` job in .github/workflows/verify.yml passes this file
+  with `/s:`; the project key, the organization and the token stay on that command
+  line, from the `SONAR_TOKEN` secret, so no coordinate and no secret is
+  duplicated here.
+
+  Precedence, from what wins: a property in a project file, then a `/d:` argument,
+  then this file, then the SonarQube Cloud UI.
+-->
+<SonarQubeAnalysisProperties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonarsource.com/msbuild/integration/2015/1">
+
+  <Property Name="sonar.sourceEncoding">UTF-8</Property>
+
+  <!--
+    Surfaces that are nobody's code — the same ones ./verify.sh, `dotnet format`
+    and .editorconfig already step over: the Godot import cache (which holds the
+    Godot projects' build output), the C# build output of the rest, the test runner
+    the gdUnit4 adapter writes into the Godot test project on every test run, and
+    the test reports. The scanner reads file types of several languages besides
+    C#, and those directories are full of them.
+  -->
+  <Property Name="sonar.exclusions">**/.godot/**,tests/Oryndra.Game.Tests/gdunit4_testadapter_v*/**,**/TestResults/**,**/bin/**,**/obj/**</Property>
+
+  <!--
+    Coverage measures the engine-agnostic core, and nothing else.
+
+    `game/**` is the Godot layer, which nothing in this repository measures with a
+    coverage tool: it is proven by booting the project and by the runtime tests,
+    and neither records a line. Counting it would report a percentage nobody can
+    move, and hide the one that matters — the movement core. It is still
+    *analysed* here, for issues; it is excused from the coverage number only.
+
+    `tests/**` are the tests: a test is not a thing to be covered.
+  -->
+  <Property Name="sonar.coverage.exclusions">game/**,tests/**</Property>
+
+  <!--
+    Written by the `sonar` job, which runs the core tests through coverlet's
+    "XPlat Code Coverage" collector. The wildcard is the per-run directory VSTest
+    puts the report in.
+  -->
+  <Property Name="sonar.cs.cobertura.reportsPaths">coverage/**/coverage.cobertura.xml</Property>
+
+  <!--
+    The job waits for the quality gate on this analysis and fails with it. The
+    check is required on `main`, so a failed gate is a pull request that cannot be
+    merged: a report nobody is held to is read once
+    (docs/adr/0010-sonar-analysis-as-a-gate.md).
+  -->
+  <Property Name="sonar.qualitygate.wait">true</Property>
+
+</SonarQubeAnalysisProperties>
