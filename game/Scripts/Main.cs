@@ -42,6 +42,7 @@ public partial class Main : Node3D
     private readonly Greybox greybox = new();
     private readonly MovementSimulation simulation;
     private FirstPersonCamera view = null!;
+    private MovementReadout readout = null!;
     private ActorState previous;
     private float unspentTime;
     private double sinceTick;
@@ -77,6 +78,9 @@ public partial class Main : Node3D
 
         view = new FirstPersonCamera { Name = "View", Tuning = tuning };
         AddChild(view);
+
+        readout = new MovementReadout { Name = "Readout" };
+        AddChild(readout);
 
         // Place the eye before the first frame is drawn, so a boot that renders
         // before it ticks is not a view from the origin.
@@ -129,16 +133,52 @@ public partial class Main : Node3D
 
         float alpha = Mathf.Clamp((float)(sinceTick / SimulationClock.FixedDeltaSeconds), 0f, 1f);
         view.Present(previous, State, alpha, delta);
+        readout.Report(State, tuning, view.Fov, Ticks);
+    }
+
+    /// <summary>
+    /// Puts the actor back where it started, as if the run had just begun.
+    /// </summary>
+    /// <remarks>
+    /// A greybox has no death, no Course and no respawn yet, so walking off its edge —
+    /// or wedging yourself somewhere the geometry has no business leaving you — would
+    /// otherwise mean restarting the game. The PRD wants an instant restart after a
+    /// fall; this is the greybox's version of it, on R.
+    /// </remarks>
+    public void Restart()
+    {
+        simulation.Reset(ActorState.StandingAt(Greybox.Spawn));
+        previous = State;
+        unspentTime = 0f;
+        sinceTick = 0d;
     }
 
     /// <inheritdoc />
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventKey { Pressed: true, Echo: false, Keycode: Key.Escape })
+        if (@event is not InputEventKey { Pressed: true, Echo: false } key)
         {
-            Input.MouseMode = Input.MouseMode == Input.MouseModeEnum.Captured
-                ? Input.MouseModeEnum.Visible
-                : Input.MouseModeEnum.Captured;
+            return;
+        }
+
+        switch (key.Keycode)
+        {
+            case Key.Escape:
+                Input.MouseMode = Input.MouseMode == Input.MouseModeEnum.Captured
+                    ? Input.MouseModeEnum.Visible
+                    : Input.MouseModeEnum.Captured;
+                break;
+
+            case Key.R:
+                Restart();
+                break;
+
+            case Key.F3:
+                readout.Visible = !readout.Visible;
+                break;
+
+            default:
+                break;
         }
     }
 

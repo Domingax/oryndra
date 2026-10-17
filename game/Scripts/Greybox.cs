@@ -43,7 +43,7 @@ public sealed class Greybox
     private readonly Piece[] pieces =
     [
         new("Floor", Slab(0f, -0.5f, 0f, 60f, 1f, 60f), Traversable: true),
-        new("Ledge", Slab(-10f, 0.5f, 0f, 12f, 1f, 12f), Traversable: true),
+        new("Ledge", Slab(-10f, 0.4f, 0f, 12f, 0.8f, 12f), Traversable: true),
         new("Step", Slab(6f, 0.3f, 6f, 4f, 0.6f, 4f), Traversable: true),
         new("Wall", Slab(14f, 2f, 0f, 1f, 4f, 40f), Traversable: false),
         new("Pillar", Slab(0f, 1.5f, 18f, 4f, 3f, 4f), Traversable: false),

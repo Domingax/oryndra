@@ -118,4 +118,82 @@ public sealed class FirstPersonTests
 
         AssertThat(view.GlobalPosition.Z).IsEqualApprox(2f, 0.01f);
     }
+
+    [TestCase]
+    public void View_WhenTheActorFalls_DoesNotOpenTheView()
+    {
+        // A play test found a jump on the spot pumping the view: the field of view was
+        // following the *falling* speed, not the running one.
+        var view = new FirstPersonCamera();
+        using var runner = ISceneRunner.Load(view, autoFree: true);
+        var falling = ActorState.StandingAt(new System.Numerics.Vector3(0f, 8f, 0f)) with
+        {
+            Velocity = new System.Numerics.Vector3(0f, -20f, 0f),
+        };
+
+        for (var frame = 0; frame < 30; frame++)
+        {
+            view.Present(falling, falling, alpha: 0f, delta: 1d / 60d);
+        }
+
+        AssertThat(view.Fov).IsEqualApprox(FirstPersonCamera.RestingFov, 0.5f);
+    }
+
+    [TestCase]
+    public void View_WhenTheActorRuns_OpensTheViewGradually()
+    {
+        // The reference eases everything it does to the camera; a view that snapped to
+        // the running speed read as an aggressive dezoom.
+        var view = new FirstPersonCamera();
+        using var runner = ISceneRunner.Load(view, autoFree: true);
+        var running = ActorState.StandingAt(new System.Numerics.Vector3(0f, 0f, 0f)) with
+        {
+            Velocity = new System.Numerics.Vector3(0f, 0f, MovementTuning.Default.SprintSpeed),
+        };
+
+        view.Present(running, running, alpha: 0f, delta: 1d / 60d);
+
+        AssertThat(view.Fov).IsGreater(FirstPersonCamera.RestingFov);
+        AssertThat(view.Fov).IsLess(FirstPersonCamera.RestingFov + 1f);
+    }
+
+    [TestCase]
+    public async Task Main_WhenRestartIsCalled_PutsTheActorBackAtTheSpawn()
+    {
+        var main = new Main();
+        using var runner = ISceneRunner.Load(main, autoFree: true);
+        main.ReadInput = yaw => MovementInput.Frame(right: 0f, forward: 1f, yaw: yaw, jump: false);
+
+        for (var frame = 0; frame < 30; frame++)
+        {
+            await ISceneRunner.SyncPhysicsFrame;
+        }
+
+        var away = main.State.Position;
+        main.Restart();
+
+        AssertThat(main.State.Position.X).IsEqualApprox(Greybox.Spawn.X, 0.01f);
+        AssertThat(main.State.Position.Z).IsEqualApprox(Greybox.Spawn.Z, 0.01f);
+        AssertThat(main.State.Velocity.Length()).IsEqualApprox(0f, 0.01f);
+        AssertThat(away.Z).IsNotEqual(main.State.Position.Z);
+    }
+
+    [TestCase]
+    public void Readout_WhenTheActorRuns_NamesTheBandAndTheSpeed()
+    {
+        var running = ActorState.StandingAt(new System.Numerics.Vector3(0f, 0f, 0f)) with
+        {
+            Velocity = new System.Numerics.Vector3(0f, 0f, MovementTuning.Default.RunSpeed),
+            Gait = Gait.Run,
+            SprintReserve = 0.5f,
+            Grounded = true,
+        };
+
+        var text = MovementReadout.Describe(running, MovementTuning.Default, fov: 82.5f, ticks: 120);
+
+        AssertThat(text).Contains("Run");
+        AssertThat(text).Contains("6.0/8 m/s");
+        AssertThat(text).Contains("grounded");
+        AssertThat(text).Contains("82.5");
+    }
 }

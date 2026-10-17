@@ -33,10 +33,13 @@ public partial class FirstPersonCamera : Camera3D
     private const float MaxPitch = 1.5533f;
 
     /// <summary>The field of view at a standstill, in degrees.</summary>
-    private const float BaseFov = 80f;
+    public const float RestingFov = 80f;
 
     /// <summary>How many degrees the field of view opens up at full sprint.</summary>
-    private const float FovGain = 8f;
+    private const float FovGain = 4f;
+
+    /// <summary>How fast the field of view moves towards what the state asks for, in degrees per second.</summary>
+    private const float FovRate = 8f;
 
     /// <summary>How far the head moves, in metres: the whole of the head motion, on purpose.</summary>
     private const float BobAmplitude = 0.02f;
@@ -44,8 +47,13 @@ public partial class FirstPersonCamera : Camera3D
     /// <summary>Metres of travel per head-bob cycle.</summary>
     private const float BobStride = 2.4f;
 
+    /// <summary>How long the head's ride takes to fade in or out, in seconds.</summary>
+    private const float BobFadeSeconds = 0.25f;
+
     private float pitch;
     private float bobPhase;
+    private float bobWeight;
+    private float fov = RestingFov;
 
     /// <summary>
     /// Gets or sets the tuning the view takes its eye height and its field of view
@@ -87,17 +95,24 @@ public partial class FirstPersonCamera : Camera3D
     public void Present(ActorState previous, ActorState current, float alpha, double delta)
     {
         var feet = System.Numerics.Vector3.Lerp(previous.Position, current.Position, alpha);
-        float speed = current.Velocity.Length();
+
+        // Only the speed along the ground counts: a fall's vertical speed is not the
+        // player running, and letting it in made a jump on the spot pump the view.
+        float speed = new System.Numerics.Vector2(current.Velocity.X, current.Velocity.Z).Length();
 
         // A head that never moves reads as a body sliding, so the eye rides a short
         // cycle driven by the distance covered. Only while the actor is on the
-        // ground: in the air there is nothing to step with.
-        if (current.Grounded && speed > 0.1f)
+        // ground: in the air there is nothing to step with. It fades rather than
+        // switching, or leaving the ground snaps the view down two centimetres.
+        var riding = current.Grounded && speed > 0.1f;
+        if (riding)
         {
             bobPhase = Mathf.PosMod(bobPhase + ((float)(speed * delta) / BobStride), 1f);
         }
 
-        float bob = current.Grounded ? Mathf.Sin(bobPhase * Mathf.Tau) * BobAmplitude : 0f;
+        bobWeight = Mathf.MoveToward(bobWeight, riding ? 1f : 0f, (float)delta / BobFadeSeconds);
+
+        var bob = Mathf.Sin(bobPhase * Mathf.Tau) * BobAmplitude * bobWeight;
 
         Vector3 eye = feet.ToGodot();
         eye.Y += EyeHeight + bob;
@@ -108,7 +123,13 @@ public partial class FirstPersonCamera : Camera3D
         Rotation = new Vector3(pitch, Yaw + Mathf.Pi, 0f);
 
         // Speed widening the view is the cheapest honest way to make running feel
-        // faster; it is presentation, so it is free to lie about nothing but light.
-        Fov = BaseFov + (FovGain * Mathf.Clamp(speed / Tuning.SprintSpeed, 0f, 1f));
+        // faster, but the reference does everything to the camera gradually: its one
+        // zoom is the vertigo state's (ZoomFOV 84, ZoomRate 30, out over 1.2 s) and
+        // its head ride is a spring. So the view is eased towards what the speed asks
+        // for rather than following it — which is also what makes it answer to
+        // acceleration instead of to speed.
+        var target = RestingFov + (FovGain * Mathf.Clamp(speed / Tuning.SprintSpeed, 0f, 1f));
+        fov = Mathf.MoveToward(fov, target, FovRate * (float)delta);
+        Fov = fov;
     }
 }
