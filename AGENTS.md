@@ -46,6 +46,13 @@ carries the style rules: a code change that is only "nearly" formatted fails the
 build, not the reviewer's patience. Which test belongs at which level, and what
 the fuzz harness guarantees: `docs/testing.md`. Tool versions: `docs/toolchain.md`.
 
+A **SonarQube Cloud** analysis runs beside the gate, on pull requests and on
+`main` (`.github/workflows/verify.yml`, `SonarQube.Analysis.xml`). It is a
+report: `./verify.sh` stays the authority, and it passes offline with no token.
+How to read the report — on the pull request, or as an agent through the SonarQube
+tools — is in `docs/testing.md`; why SonarCloud, and why the quality gate does not
+block a merge, in `docs/adr/0010-sonar-analysis-as-a-report.md`.
+
 ## Agent skills
 
 ### Issue tracker

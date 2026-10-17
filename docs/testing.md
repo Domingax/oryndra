@@ -6,7 +6,9 @@ How a change in oryndra gets proven, and at which level.
 check, boot the game headlessly, tests. If it is green locally, CI should agree;
 if it is red, nothing else matters. CI runs the very same script
 (`.github/workflows/verify.yml`), so this document only has to explain *where* a
-test belongs, not how to run one.
+test belongs, not how to run one. A second CI job reports a SonarQube Cloud
+analysis beside it; that is a reading, not a level — see
+[The Sonar report](#the-sonar-report).
 
 ## Test levels
 
@@ -92,3 +94,43 @@ The adapter also writes `gdunit4_testadapter_v*/GdUnit4TestRunnerScene.cs` into
 that project on every run. It is generated, so it is git-ignored and declared as
 generated in `.editorconfig`: the format check and the analyzers step over it,
 and no cleanup step is needed to keep the tree honest.
+
+## The Sonar report
+
+A second CI job (`sonar`, in `.github/workflows/verify.yml`) reports a SonarQube
+Cloud analysis of the repository on every pull request and on `main`. It is not a
+fourth test level and not a gate: it reads what the levels above already prove, and
+it adds the one number they cannot produce — how much of the core the core tests
+touch. `./verify.sh` remains the command that decides.
+
+Where to read it:
+
+- **On the pull request.** SonarQube Cloud comments with the quality gate, the new
+  issues, and a link to the detailed analysis of that pull request.
+- **From an agent.** The SonarQube tools read the same project. The key is
+  `Domingax_oryndra` in the `domingax` organization: `search_my_sonarqube_projects`
+  finds it, `get_project_quality_gate_status` and `search_sonar_issues_in_projects`
+  answer for `main`, `get_component_measures` carries coverage, and
+  `list_pull_requests` gives the `pullRequest` key that scopes an issue search to a
+  pull request's analysis.
+- **In a browser.** The link the pull request comment carries.
+
+What the numbers mean here:
+
+- **Coverage is the core's.** It comes from the core tests' coverage report and is
+  narrowed to `src/Oryndra.Core`: the Godot layer and the tests are excluded
+  (`sonar.coverage.exclusions`), because nothing records line coverage for the game
+  and a test is not a thing to be covered. A coverage drop points at the movement
+  rules — which is where this table puts the weight.
+- **Issues cover the whole repository**, the Godot layer included, the Godot import
+  cache and the generated test runner aside (`SonarQube.Analysis.xml`). Reading
+  the level that cannot be unit-tested is what the report is for.
+- **The quality gate does not block a merge.** `verify` is the check that decides;
+  the gate is a report on the pull request. Why it was left that way, and what
+  turning it into a gate would cost: `docs/adr/0010-sonar-analysis-as-a-report.md`.
+- **A red `sonar` job is usually configuration, not code.** The commonest cause is
+  *Automatic Analysis* being left on for the SonarQube Cloud project: the free plan
+  refuses to combine it with an analysis from CI.
+- **The local loop needs no Sonar account.** `./verify.sh` never talks to
+  SonarQube Cloud and never asks for a token; the `sonar` job does, from the
+  `SONAR_TOKEN` repository secret.

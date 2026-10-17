@@ -46,3 +46,67 @@ jobs:
 
       - name: Verify
         run: ./verify.sh
+
+  # The analysis beside the gate: it reports on the pull request, it does not
+  # decide the merge (docs/adr/0010-sonar-analysis-as-a-report.md). It is a second
+  # job rather than a step in `verify` because the scanner rewrites the build's
+  # ruleset and relaxes warnings-as-errors, which `./verify.sh` must not inherit:
+  # the gate has to stay the same command locally and in CI.
+  sonar:
+    name: sonar
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # SonarQube Cloud's free plan analyses pull requests and the default branch,
+    # and nothing else: a push to a feature branch would ask for a branch analysis
+    # it does not offer. A pull request opened from a fork carries no secret, so it
+    # is skipped here rather than failed — `verify` still runs for it.
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+      || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # New-code detection blames every line: a shallow clone leaves the
+          # analysis without the history it reasons about.
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install SonarScanner for .NET
+        run: |
+          dotnet tool install --global dotnet-sonarscanner --version 12.0.0
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:Domingax_oryndra \
+            /o:domingax \
+            /s:"$PWD/SonarQube.Analysis.xml" \
+            /d:sonar.token="$SONAR_TOKEN"
+
+          # Built without warnings-as-errors: the Sonar rules arrive as build
+          # warnings, and a report that fails the build is a gate by another name.
+          dotnet build oryndra.sln --no-incremental -p:TreatWarningsAsErrors=false
+
+          # The same core tests the gate runs, asking coverlet for the coverage
+          # report SonarQube.Analysis.xml points at. No token is needed for them.
+          dotnet test tests/Oryndra.Core.Tests/Oryndra.Core.Tests.csproj \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            --results-directory coverage
+
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
