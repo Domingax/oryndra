@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  What the SonarQube Cloud analysis looks at, and what it measures
-  (docs/adr/0010-sonar-analysis-as-a-report.md).
+  What the SonarQube Cloud analysis looks at, what it measures, and when it
+  fails the job (docs/adr/0010-sonar-analysis-as-a-gate.md).
 
   This is the SonarScanner for .NET's own configuration file — not the
   `sonar-project.properties` of the CLI scanner, which the .NET scanner does not
@@ -46,5 +46,13 @@
     puts the report in.
   -->
   <Property Name="sonar.cs.cobertura.reportsPaths">coverage/**/coverage.cobertura.xml</Property>
+
+  <!--
+    The job waits for the quality gate on this analysis and fails with it. The
+    check is required on `main`, so a failed gate is a pull request that cannot be
+    merged: a report nobody is held to is read once
+    (docs/adr/0010-sonar-analysis-as-a-gate.md).
+  -->
+  <Property Name="sonar.qualitygate.wait">true</Property>
 
 </SonarQubeAnalysisProperties>

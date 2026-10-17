@@ -7,8 +7,8 @@ check, boot the game headlessly, tests. If it is green locally, CI should agree;
 if it is red, nothing else matters. CI runs the very same script
 (`.github/workflows/verify.yml`), so this document only has to explain *where* a
 test belongs, not how to run one. A second CI job reports a SonarQube Cloud
-analysis beside it; that is a reading, not a level — see
-[The Sonar report](#the-sonar-report).
+analysis beside it, and its quality gate binds the merge; that is a gate, not a
+level — see [The Sonar report](#the-sonar-report).
 
 ## Test levels
 
@@ -99,9 +99,12 @@ and no cleanup step is needed to keep the tree honest.
 
 A second CI job (`sonar`, in `.github/workflows/verify.yml`) reports a SonarQube
 Cloud analysis of the repository on every pull request and on `main`. It is not a
-fourth test level and not a gate: it reads what the levels above already prove, and
-it adds the one number they cannot produce — how much of the core the core tests
-touch. `./verify.sh` remains the command that decides.
+fourth test level: it reads what the levels above already prove, and it adds the
+one number they cannot produce — how much of the core the core tests touch. It is
+also a gate: the job waits for the quality gate and fails with it, and `main`
+requires that check, so a failed gate is a pull request that cannot be merged.
+`./verify.sh` keeps its own job, unchanged, and remains the command that decides
+locally and offline.
 
 Where to read it:
 
@@ -129,9 +132,14 @@ What the numbers mean here:
 - **Issues cover the whole repository**, the Godot layer included, the Godot import
   cache and the generated test runner aside (`SonarQube.Analysis.xml`). Reading
   the level that cannot be unit-tested is what the report is for.
-- **The quality gate does not block a merge.** `verify` is the check that decides;
-  the gate is a report on the pull request. Why it was left that way, and what
-  turning it into a gate would cost: `docs/adr/0010-sonar-analysis-as-a-report.md`.
+- **The quality gate blocks the merge.** The `sonar` job waits for the gate on the
+  analysis it just uploaded and fails if the gate fails (`sonar.qualitygate.wait`),
+  and the `Sonar gate` ruleset on the default branch requires a pull request
+  carrying the `SonarCloud Code Analysis` check that the SonarQube Cloud app posts.
+  So `main` takes changes through pull requests, and a fork's pull request — no
+  secret, no analysis — cannot be merged at all. What the gate checks lives in the
+  SonarQube Cloud UI, not in this repository; why it binds, and what that costs:
+  `docs/adr/0010-sonar-analysis-as-a-gate.md`.
 - **A red `sonar` job is usually configuration, not code.** The commonest cause is
   *Automatic Analysis* being left on for the SonarQube Cloud project: the free plan
   refuses to combine it with an analysis from CI.

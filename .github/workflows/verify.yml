@@ -47,11 +47,12 @@ jobs:
       - name: Verify
         run: ./verify.sh
 
-  # The analysis beside the gate: it reports on the pull request, it does not
-  # decide the merge (docs/adr/0010-sonar-analysis-as-a-report.md). It is a second
-  # job rather than a step in `verify` because the scanner rewrites the build's
-  # ruleset and relaxes warnings-as-errors, which `./verify.sh` must not inherit:
-  # the gate has to stay the same command locally and in CI.
+  # The analysis gate: it reports on the pull request, and it fails with the
+  # quality gate — `main` requires that check, so this decides the merge
+  # (docs/adr/0010-sonar-analysis-as-a-gate.md). It is a second job rather than a
+  # step in `verify` because the scanner rewrites the build's ruleset and relaxes
+  # warnings-as-errors, which `./verify.sh` must not inherit: the local gate has to
+  # stay the same command, offline, with no token.
   sonar:
     name: sonar
     runs-on: ubuntu-latest
