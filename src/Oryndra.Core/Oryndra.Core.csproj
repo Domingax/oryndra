@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The engine-agnostic core. Nothing here may reference Godot: the movement
+    simulation must be testable without an engine, and the engine layer adapts
+    the state at the boundary.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Oryndra.Core</RootNamespace>
+    <AssemblyName>Oryndra.Core</AssemblyName>
+  </PropertyGroup>
+
+</Project>

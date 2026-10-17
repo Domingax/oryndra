@@ -1,0 +1,24 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+
+  <!--
+    The Godot layer: it converts engine events into InputFrame values, hands them
+    to the engine-agnostic simulation, and presents the resulting ActorState.
+    No movement rule lives here.
+  -->
+  <PropertyGroup>
+    <!--
+      Pinned here as well as in Directory.Build.props, and it has to be: when a
+      Godot project does not name its own framework, the Godot editor rewrites the
+      project file to net8.0 the first time it imports it (leaving a .csproj.old
+      behind). Naming it keeps the tooling from disagreeing with the repository.
+    -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Oryndra.Game</RootNamespace>
+    <AssemblyName>Oryndra.Game</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../src/Oryndra.Core/Oryndra.Core.csproj" />
+  </ItemGroup>
+
+</Project>

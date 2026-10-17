@@ -1,0 +1,20 @@
+; Engine configuration file.
+; Committed by hand: the .godot/ cache next to it is machine-made and ignored.
+
+config_version=5
+
+[application]
+
+config/name="oryndra"
+run/main_scene="res://Scenes/Main.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[dotnet]
+
+project/assembly_name="Oryndra.Game"
+
+[physics]
+
+; The simulation advances on a fixed 60 Hz step (see Oryndra.Core.SimulationClock).
+; Pinning the engine's physics tick to the same rate keeps the two in step.
+common/physics_ticks_per_second=60

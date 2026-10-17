@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings for the Godot-runtime test run. Pass this to `dotnet test`
+  (see ./verify.sh).
+
+  The gdUnit4 adapter reads the Godot executable from its own environment, so
+  GODOT_BIN must be set by the caller: a committed path would only be right on one
+  machine.
+-->
+<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>1</MaxCpuCount>
+    <ResultsDirectory>./TestResults</ResultsDirectory>
+    <TestSessionTimeout>600000</TestSessionTimeout>
+    <TreatNoTestsAsError>true</TreatNoTestsAsError>
+  </RunConfiguration>
+
+  <GdUnit4>
+    <!-- The headless flag keeps the run off any display; the dummy audio driver keeps it quiet. -->
+    <Parameters>--headless --audio-driver Dummy</Parameters>
+    <DisplayName>FullyQualifiedName</DisplayName>
+    <CaptureStdOut>true</CaptureStdOut>
+    <GodotConnectTimeout>30000</GodotConnectTimeout>
+    <!-- The adapter rebuilds the Godot project before it launches it. -->
+    <CompileProcessTimeout>120000</CompileProcessTimeout>
+  </GdUnit4>
+</RunSettings>

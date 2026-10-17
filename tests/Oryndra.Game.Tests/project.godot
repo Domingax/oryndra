@@ -1,0 +1,18 @@
+; The test project is itself a Godot project: gdUnit4Net runs the tests inside a
+; headless Godot process, which needs a project directory of its own.
+; The .godot/ cache next to it is machine-made and ignored.
+
+config_version=5
+
+[application]
+
+config/name="oryndra godot tests"
+config/features=PackedStringArray("4.7", "C#")
+
+[dotnet]
+
+project/assembly_name="Oryndra.Game.Tests"
+
+[physics]
+
+common/physics_ticks_per_second=60
