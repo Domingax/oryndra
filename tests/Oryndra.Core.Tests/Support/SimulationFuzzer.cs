@@ -54,7 +54,7 @@ public static class SimulationFuzzer
     {
         float angle = random.NextSingle() * MathF.Tau;
         var axis = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-        var magnitude = random.Next(4) switch
+        float magnitude = random.Next(4) switch
         {
             0 => 0f, // the player lets go of the stick
             1 => 0.25f, // a light push: the walk band

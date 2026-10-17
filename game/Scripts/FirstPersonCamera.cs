@@ -86,7 +86,7 @@ public partial class FirstPersonCamera : Camera3D
     /// <param name="delta">The frame's duration, in seconds, for the head's own motion.</param>
     public void Present(ActorState previous, ActorState current, float alpha, double delta)
     {
-        System.Numerics.Vector3 feet = System.Numerics.Vector3.Lerp(previous.Position, current.Position, alpha);
+        var feet = System.Numerics.Vector3.Lerp(previous.Position, current.Position, alpha);
         float speed = current.Velocity.Length();
 
         // A head that never moves reads as a body sliding, so the eye rides a short
