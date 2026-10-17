@@ -169,7 +169,7 @@ public sealed class BoxRoom : ICollisionQuery
             return sweep;
         }
 
-        var stop = solidMax - sweep.OffsetLow;
+        float stop = solidMax - sweep.OffsetLow;
         if (sweep.Candidate > stop)
         {
             return sweep;

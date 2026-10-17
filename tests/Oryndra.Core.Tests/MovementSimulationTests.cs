@@ -93,17 +93,17 @@ public sealed class MovementSimulationTests
         // thrown three metres, and the throw came back as speed — the actor ran away
         // at 180 m/s. What a player feels is the run they were doing: no tick may
         // move the body further than a tick of running can.
-        var room = new BoxRoom()
+        BoxRoom room = new BoxRoom()
             .Add(Box.FromCorners(new Vector3(-30f, -1f, -30f), new Vector3(30f, 0f, 30f)))
             .Add(Box.FromCorners(new Vector3(4f, 0f, 4f), new Vector3(8f, 0.6f, 8f)));
         var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(8.4f, 0f, 5.4f)));
-        var input = Simulate.RunningTowards(3.991f);
-        var previous = simulation.State;
-        var longest = 0f;
+        InputFrame input = Simulate.RunningTowards(3.991f);
+        ActorState previous = simulation.State;
+        float longest = 0f;
 
-        for (var tick = 0; tick < 60; tick++)
+        for (int tick = 0; tick < 60; tick++)
         {
-            var state = simulation.Advance(input, Tick);
+            ActorState state = simulation.Advance(input, Tick);
             longest = MathF.Max(longest, (state.Position - previous.Position).Length());
             previous = state;
         }
@@ -122,7 +122,7 @@ public sealed class MovementSimulationTests
         // where the float error of the tick that stopped it leaves it — used to be
         // resolved against the step's far face: the actor was put under the floor and
         // then thrown across the level by the next axis.
-        var room = new BoxRoom()
+        BoxRoom room = new BoxRoom()
             .Add(Box.FromCorners(new Vector3(-30f, -1f, -30f), new Vector3(30f, 0f, 30f)))
             .Add(Box.FromCorners(new Vector3(4f, 0f, 4f), new Vector3(8f, 0.6f, 8f)));
         var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(8.399999f, 0f, 5.4f)));
