@@ -58,6 +58,15 @@ Violations are collected instead of thrown, so a failing seed reads as a report.
 Adding a seed to `FuzzHarnessTests` is the cheap way to widen the net; a new
 invariant belongs in `SimulationFuzzer`'s tick check.
 
+The harness drives the actor with two shapes of input, because they explore
+different states. **Chaotic** input draws a fresh direction every tick — the input
+space, unshaped. **Deliberate** input holds a direction for a stretch and jumps on
+purpose, which is the shape a hand produces: a body has to *stay* against a face
+before the collision query has anything to resolve, and a play test found the bug
+that only that shape reaches (a body sliding along a step, thrown past it). Both run
+against every seed, and against a room with a step in it — bare walls only ever ask
+the query about flat surfaces.
+
 `BoxRoom` is the collision query those tests run against: blocks, resolved one axis
 at a time. It is deliberately blunt, and deliberately immune to tunnelling. It
 lives in the core (`src/Oryndra.Core/Movement/BoxRoom.cs`) rather than beside the

@@ -86,6 +86,54 @@ public sealed class MovementSimulationTests
     }
 
     [Fact]
+    public void Advance_WhenTheActorSlidesAlongAStep_KeepsTheRunItHad()
+    {
+        // The play test's collision bug, through the seam: a body pressed against a
+        // step and sliding along it used to be resolved against the step's far face,
+        // thrown three metres, and the throw came back as speed — the actor ran away
+        // at 180 m/s. What a player feels is the run they were doing: no tick may
+        // move the body further than a tick of running can.
+        var room = new BoxRoom()
+            .Add(Box.FromCorners(new Vector3(-30f, -1f, -30f), new Vector3(30f, 0f, 30f)))
+            .Add(Box.FromCorners(new Vector3(4f, 0f, 4f), new Vector3(8f, 0.6f, 8f)));
+        var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(8.4f, 0f, 5.4f)));
+        var input = Simulate.RunningTowards(3.991f);
+        var previous = simulation.State;
+        var longest = 0f;
+
+        for (var tick = 0; tick < 60; tick++)
+        {
+            var state = simulation.Advance(input, Tick);
+            longest = MathF.Max(longest, (state.Position - previous.Position).Length());
+            previous = state;
+        }
+
+        Assert.True(
+            longest <= MovementTuning.Default.SprintSpeed * Tick,
+            $"one tick moved the body {longest:0.###} m, further than any run could");
+        Assert.True(previous.Position.Z < 4f, $"the actor should have slid along the step, was {previous.Position}");
+        Assert.False(room.Overlaps(previous.Position, MovementTuning.Default.Body));
+    }
+
+    [Fact]
+    public void Advance_WhenTheActorJumpsBesideAStep_IsNotThrownOutOfTheRoom()
+    {
+        // Jumping with the body's volume over a step — pressed against it, which is
+        // where the float error of the tick that stopped it leaves it — used to be
+        // resolved against the step's far face: the actor was put under the floor and
+        // then thrown across the level by the next axis.
+        var room = new BoxRoom()
+            .Add(Box.FromCorners(new Vector3(-30f, -1f, -30f), new Vector3(30f, 0f, 30f)))
+            .Add(Box.FromCorners(new Vector3(4f, 0f, 4f), new Vector3(8f, 0.6f, 8f)));
+        var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(8.399999f, 0f, 5.4f)));
+
+        var state = simulation.Advance(new InputFrame { Jump = true }, Tick);
+
+        Assert.True(state.Position.Y > 0f, $"the jump should leave the floor, was {state.Position}");
+        Assert.True(state.Position.X > 0f, $"the actor must not be thrown out of the room, was {state.Position}");
+    }
+
+    [Fact]
     public void Advance_ReturnsTheStateItStores()
     {
         var simulation = new MovementSimulation(BoxRoom.Room());

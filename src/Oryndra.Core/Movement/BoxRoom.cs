@@ -131,23 +131,37 @@ public sealed class BoxRoom : ICollisionQuery
             var solidMin = Component(solid.Min, axis);
             var solidMax = Component(solid.Max, axis);
 
-            // The body's faces sweep an interval; the block is in the way when
-            // that interval meets the block's. Using the faces rather than the
-            // centre is what keeps a fast body from ending up buried in a wall.
-            var faceFrom = MathF.Min(current, candidate) + offsetLow;
-            var faceTo = MathF.Max(current, candidate) + offsetHigh;
-            if (faceTo <= solidMin || faceFrom >= solidMax)
-            {
-                continue;
-            }
-
+            // Only a face the body reaches from the outside stops it, and only when
+            // the move would actually cross that face. Both halves matter: a body
+            // standing against a block has its volume a hair inside it from the last
+            // tick's float error, and a body falling *past* a tall block is not
+            // standing on it. Without the first, a body pressed against a wall was
+            // resolved against the wall's far face — thrown onto its top, or across
+            // the level, with the throw fed back as speed. Without the second, a
+            // body in the air over a floor it has left is reported as grounded.
             if (delta > 0f)
             {
+                if (current + offsetHigh > solidMin)
+                {
+                    continue;
+                }
+
                 candidate = MathF.Min(candidate, solidMin - offsetHigh);
             }
             else
             {
-                candidate = MathF.Max(candidate, solidMax - offsetLow);
+                if (current + offsetLow < solidMax)
+                {
+                    continue;
+                }
+
+                var stop = solidMax - offsetLow;
+                if (candidate > stop)
+                {
+                    continue;
+                }
+
+                candidate = stop;
                 if (axis == Axis.Y)
                 {
                     grounded = true;

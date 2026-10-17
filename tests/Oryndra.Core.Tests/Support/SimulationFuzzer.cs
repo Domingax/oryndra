@@ -50,7 +50,8 @@ public static class SimulationFuzzer
         return new FuzzSession(settings, collision, tuning ?? MovementTuning.Default).Run();
     }
 
-    private static InputFrame NextInput(Random random)
+    /// <summary>Draws a fresh direction every tick: the input space, unshaped.</summary>
+    private static InputFrame Chaotic(Random random)
     {
         float angle = random.NextSingle() * MathF.Tau;
         var axis = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
@@ -73,6 +74,52 @@ public static class SimulationFuzzer
     /// <summary>One tick of a run: what went in, and what came out.</summary>
     private readonly record struct Tick(int Index, ActorState Before, InputFrame Input, ActorState After);
 
+    /// <summary>
+    /// Holds a direction for a stretch, the way a hand does, and jumps on purpose.
+    /// </summary>
+    /// <remarks>
+    /// Chaotic input draws a fresh direction every tick, which never leaves the actor
+    /// pressed against a face long enough to resolve anything: the collision bug the
+    /// play test found — a body sliding along a block, thrown past it — needed a held
+    /// direction. This is the shape of input a player produces.
+    /// </remarks>
+    private sealed class DeliberateInput(Random random)
+    {
+        private float yaw = random.NextSingle() * MathF.Tau;
+        private float magnitude = 1f;
+        private int jumpFor;
+
+        /// <summary>Draws the next tick's input, holding a direction across ticks.</summary>
+        /// <returns>The frame to advance on.</returns>
+        public InputFrame Next()
+        {
+            if (random.Next(12) == 0)
+            {
+                yaw = random.NextSingle() * MathF.Tau;
+            }
+
+            if (random.Next(6) == 0)
+            {
+                magnitude = random.Next(4) switch { 0 => 0f, 1 => 0.25f, 2 => 0.5f, _ => 1f };
+            }
+
+            if (jumpFor == 0 && random.Next(25) == 0)
+            {
+                jumpFor = random.Next(1, 6);
+            }
+
+            var frame = new InputFrame
+            {
+                MoveAxis = new Vector2(0f, magnitude),
+                Yaw = yaw,
+                Jump = jumpFor > 0,
+            };
+
+            jumpFor = Math.Max(0, jumpFor - 1);
+            return frame;
+        }
+    }
+
     /// <summary>A single fuzz run, and everything it is checked against.</summary>
     private sealed class FuzzSession(FuzzSettings settings, BoxRoom collision, MovementTuning tuning)
     {
@@ -85,10 +132,14 @@ public static class SimulationFuzzer
         public FuzzRun Run()
         {
             var random = new Random(settings.Seed);
+            var deliberate = new DeliberateInput(random);
+            Func<InputFrame> nextInput = settings.Style == InputStyle.Chaotic
+                ? () => Chaotic(random)
+                : deliberate.Next;
 
             for (var index = 0; index < settings.Ticks && violations.Count < settings.MaxViolations; index++)
             {
-                var input = NextInput(random);
+                var input = nextInput();
                 var before = simulation.State;
                 var after = simulation.Advance(input, settings.DeltaSeconds);
 

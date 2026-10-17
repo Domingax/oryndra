@@ -13,6 +13,7 @@ This is a deliberate exception to the sentence in ADR-0009 that has the engine l
 ## Consequences
 
 - The core ships a geometry type as well as the seam. Its lines are covered like the rest of the core: the fuzz harness drives `MoveBody` on every tick, and `MovementSimulationTests`/`BoxRoomTests` pin the wall, floor and bound behaviour.
+- The resolver's contract is narrow on purpose: it moves a body that starts outside solid geometry, and it only ever **removes** motion — a face stops a body that reaches it from the outside, and a move that would not cross the face is not a collision at all. Both halves are pinned (`BoxRoomTests`), because a play test found what breaking the first looks like: a body pressed against a block is resolved against the block's *far* face, which throws it onto a wall or across the level, and the throw comes back as speed.
 - The Godot layer's collision work is content — the block list — and its evidence is a different level: the engine-runtime tests assert the actor comes up grounded on the greybox, and a play-through is how the space is judged (docs/testing.md).
 - Replacing the greybox with a Map changes which `ICollisionQuery` the simulation is built with, and nothing else about it.
 

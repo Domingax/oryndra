@@ -10,6 +10,15 @@ public sealed record FuzzSettings
     /// <summary>Gets the seed of the input sequence; the same seed replays the same run.</summary>
     public required int Seed { get; init; }
 
+    /// <summary>Gets how the run asks for input.</summary>
+    /// <remarks>
+    /// The two shapes explore different states: one draws a fresh direction every
+    /// tick, the other holds one the way a hand does. A body has to *stay* against a
+    /// face before the collision query has anything to resolve, and only the second
+    /// shape produces that.
+    /// </remarks>
+    public InputStyle Style { get; init; } = InputStyle.Chaotic;
+
     /// <summary>Gets how many ticks to simulate.</summary>
     public int Ticks { get; init; } = 2_000;
 
