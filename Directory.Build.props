@@ -1,0 +1,35 @@
+<Project>
+
+  <!--
+    Settings every project in the repository shares: one target framework, an
+    engine-agnostic language level, and static analysis strong enough that a
+    warning fails the build (see AGENTS.md and docs/testing.md).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <Deterministic>true</Deterministic>
+    <!--
+      IDE0005 (remove unnecessary usings) only runs during a build when the
+      compiler emits a documentation file. The file itself is fine to produce;
+      missing doc comments are not interesting enough to warn about.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    Godot puts its build output inside the project directory (.godot/mono/temp).
+    `dotnet format` must not fall over it.
+  -->
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);.godot/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+</Project>

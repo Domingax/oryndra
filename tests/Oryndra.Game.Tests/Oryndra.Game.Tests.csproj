@@ -1,0 +1,44 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+
+  <!--
+    Tests that need a real Godot runtime. They run inside a headless Godot
+    launched by gdUnit4Net's VSTest adapter (see docs/testing.md), so this project
+    is itself a Godot project and `project.godot` sits next to it.
+
+    Godot projects cannot use central package management, and the gdUnit4 API is
+    built against an older GodotSharp than the SDK ships, hence the suppressions.
+  -->
+  <PropertyGroup>
+    <!--
+      Pinned here as well as in Directory.Build.props: without an explicit
+      TargetFramework the gdUnit4 adapter rewrites this project file to net8.0
+      when it runs (leaving a .csproj.old behind).
+    -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Oryndra.Game.Tests</RootNamespace>
+    <AssemblyName>Oryndra.Game.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <VSTestTestAdapterPath>none</VSTestTestAdapterPath>
+    <TestFramework>GdUnit4</TestFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- NU1605: gdUnit4 against a newer GodotSharp. CS8785: its analyzer on this SDK.
+         CA1707/CA1822: test names use underscores, and gdUnit4 runs test methods as instance methods. -->
+    <NoWarn>$(NoWarn);NU1605;CS8785;CA1707;CA1822</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="gdUnit4.api" Version="5.1.0-rc5" />
+    <PackageReference Include="gdUnit4.test.adapter" Version="3.1.1" />
+    <PackageReference Include="gdUnit4.analyzers" Version="1.0.0">
+      <PrivateAssets>none</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../game/Oryndra.Game.csproj" />
+  </ItemGroup>
+
+</Project>

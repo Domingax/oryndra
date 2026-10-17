@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Fast, engine-free tests of the core: no Godot runtime, no display, no build of
+    the game. This is the level every movement change is expected to be proven at
+    (see docs/testing.md).
+  -->
+  <PropertyGroup>
+    <RootNamespace>Oryndra.Core.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Test names read as `Method_Scenario_Expectation`; the underscores are the point. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Oryndra.Core/Oryndra.Core.csproj" />
+  </ItemGroup>
+
+</Project>
