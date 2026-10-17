@@ -45,26 +45,40 @@ runtime test asserts the *assembly and its nodes* instead.
 Unit tests say what the simulation does for the inputs we thought of; the harness
 in `tests/Oryndra.Core.Tests/Support` says what it must never do for the inputs we
 did not. `SimulationFuzzer` drives the public seam with random input sequences and
-checks five things after every tick:
+checks six things after every tick:
 
 1. the state is finite (no NaN, no infinity);
 2. the body is never left inside solid geometry;
 3. the body never leaves the room's outer bounds;
 4. the speed stays within a coarse bound, so nothing feeds itself speed;
-5. the actor is never stuck in open space for a whole window of ticks.
+5. the sprint reserve stays between empty and full;
+6. the actor is never stuck in open space for a whole window of ticks.
 
 Violations are collected instead of thrown, so a failing seed reads as a report.
 Adding a seed to `FuzzHarnessTests` is the cheap way to widen the net; a new
 invariant belongs in `SimulationFuzzer`'s tick check.
 
+The harness drives the actor with two shapes of input, because they explore
+different states. **Chaotic** input draws a fresh direction every tick — the input
+space, unshaped. **Deliberate** input holds a direction for a stretch and jumps on
+purpose, which is the shape a hand produces: a body has to *stay* against a face
+before the collision query has anything to resolve, and a play test found the bug
+that only that shape reaches (a body sliding along a step, thrown past it). Both run
+against every seed, and against a room with a step in it — bare walls only ever ask
+the query about flat surfaces.
+
 `BoxRoom` is the collision query those tests run against: blocks, resolved one axis
-at a time. It is deliberately blunt, and deliberately immune to tunnelling. Being
-blunt has a limit worth stating: 1–4 ask the same query that handed the
-simulation its position, so they establish that the simulation never puts the body
-where the geometry says it cannot be — it does not invent a position, slip through
-a wall or lose speed through one. A bug inside `BoxRoom` itself is outside what
-the fuzz run can see; the wall and floor behaviour it provides is what the seam
-tests in `MovementSimulationTests` assert.
+at a time. It is deliberately blunt, and deliberately immune to tunnelling. It
+lives in the core (`src/Oryndra.Core/Movement/BoxRoom.cs`) rather than beside the
+tests, because the greybox the game is played in is built from the same blocks: a
+surface behaves in a play-through exactly as it behaves in an assertion, and the
+block resolver has one implementation to cover. A Map will answer the seam in its
+place (ticket #5). Being blunt has a limit worth stating: 1–4 ask the same query
+that handed the simulation its position, so they establish that the simulation
+never puts the body where the geometry says it cannot be — it does not invent a
+position, slip through a wall or lose speed through one. A bug inside `BoxRoom`
+itself is outside what the fuzz run can see; the wall and floor behaviour it
+provides is what the seam tests in `MovementSimulationTests` assert.
 
 ## Determinism
 

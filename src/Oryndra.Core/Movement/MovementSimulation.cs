@@ -70,23 +70,38 @@ public sealed class MovementSimulation
         // The ground state comes from the collision query, never from an inherited
         // flag alone: an actor spawned on the floor is grounded on its very first
         // tick, so a jump is never silently dropped. A flag left over from the
-        // previous tick counts too, which is exactly one tick of coyote time.
-        var grounded = state.Grounded || HasGroundBelow();
+        // previous tick counts too, which is what keeps a body that has just walked
+        // off a ledge under ground control for one tick.
+        bool underfoot = HasGroundBelow();
+        bool grounded = state.Grounded || underfoot;
 
-        var planar = Approach(
-            Planar(input.WishDirection * tuning.MoveSpeed),
+        // Coyote time: the window after leaving the ground in which a jump still
+        // counts. Only real ground refills it — the inherited flag above is not
+        // enough, or the window would be a tick wider than it is tuned to be.
+        // Standing on the ground refills it; the jump that spends it empties it, so
+        // a press firing once cannot fire again next tick.
+        float coyote = underfoot
+            ? tuning.CoyoteTime
+            : MathF.Max(0f, state.CoyoteSecondsLeft - deltaSeconds);
+
+        Vector2 wish = Planar(input.WishDirection);
+        (Gait gait, float reserve) = ChooseGait(input, wish, grounded, deltaSeconds, state.SprintReserve);
+
+        Vector2 planar = Approach(
+            wish * SpeedOf(gait),
             Planar(state.Velocity),
             Acceleration(deltaSeconds, grounded));
 
-        var vertical = state.Velocity.Y;
+        float vertical = state.Velocity.Y;
         if (grounded && vertical < 0f)
         {
             vertical = 0f;
         }
 
-        if (input.Jump && grounded)
+        if (input.Jump && (grounded || coyote > 0f))
         {
             vertical = tuning.JumpSpeed;
+            coyote = 0f;
         }
 
         vertical -= tuning.Gravity * deltaSeconds;
@@ -108,8 +123,77 @@ public sealed class MovementSimulation
             Velocity = achieved,
             Yaw = input.Yaw,
             Grounded = moved.Grounded,
+            Gait = gait,
+            SprintReserve = reserve,
+            CoyoteSecondsLeft = coyote,
         };
     }
+
+    /// <summary>
+    /// Picks the speed band for this tick and moves the sprint reserve it costs.
+    /// </summary>
+    /// <param name="input">What the player asked for.</param>
+    /// <param name="wish">The direction asked for, unit length or zero.</param>
+    /// <param name="grounded">Whether the actor has the ground under it.</param>
+    /// <param name="deltaSeconds">The tick's duration, in seconds.</param>
+    /// <param name="reserve">The sprint reserve the actor has, from 0 to 1.</param>
+    /// <returns>The band the actor moves in, and the reserve it leaves behind.</returns>
+    private (Gait Gait, float Reserve) ChooseGait(
+        InputFrame input,
+        Vector2 wish,
+        bool grounded,
+        float deltaSeconds,
+        float reserve)
+    {
+        // The stick's travel bands the target speed: a light push walks, a full
+        // push runs.
+        bool moving = wish != Vector2.Zero;
+        bool running = moving && input.MoveAxis.Length() >= tuning.RunAxisThreshold;
+
+        Gait gait;
+        if (!moving)
+        {
+            gait = Gait.Idle;
+        }
+        else if (running)
+        {
+            gait = Gait.Run;
+        }
+        else
+        {
+            gait = Gait.Walk;
+        }
+
+        // The sprint reserve is a hysteresis rather than a button. It fills while
+        // the actor runs on the ground, a full reserve turns the run into a sprint,
+        // and the sprint holds until the reserve is spent — at which point the
+        // reserve is empty and the engage threshold is a whole run away again.
+        bool sprinting = state.Gait == Gait.Sprint && running && reserve > tuning.SprintReleaseThreshold;
+        if (!sprinting && running && grounded && reserve >= tuning.SprintEngageThreshold)
+        {
+            sprinting = true;
+        }
+
+        if (sprinting)
+        {
+            reserve = MathF.Max(0f, reserve - (tuning.SprintDrainRate * deltaSeconds));
+        }
+        else if (running && grounded)
+        {
+            reserve = MathF.Min(1f, reserve + (tuning.SprintBuildRate * deltaSeconds));
+        }
+
+        return (sprinting ? Gait.Sprint : gait, reserve);
+    }
+
+    /// <summary>Gets the speed a band moves at, in metres per second.</summary>
+    private float SpeedOf(Gait gait) => gait switch
+    {
+        Gait.Sprint => tuning.SprintSpeed,
+        Gait.Run => tuning.RunSpeed,
+        Gait.Walk => tuning.WalkSpeed,
+        _ => 0f,
+    };
 
     /// <summary>Projects a vector onto the horizontal plane the actor walks on.</summary>
     private static Vector2 Planar(Vector3 vector) => new(vector.X, vector.Z);
