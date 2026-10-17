@@ -1,5 +1,10 @@
 ; Engine configuration file.
-; Committed by hand: the .godot/ cache next to it is machine-made and ignored.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -12,9 +17,3 @@ config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 [dotnet]
 
 project/assembly_name="Oryndra.Game"
-
-[physics]
-
-; The simulation advances on a fixed 60 Hz step (see Oryndra.Core.SimulationClock).
-; Pinning the engine's physics tick to the same rate keeps the two in step.
-common/physics_ticks_per_second=60

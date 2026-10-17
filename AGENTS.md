@@ -8,9 +8,16 @@ The product requirements are described in `PRD.md`.
 | Path | What it is |
 |---|---|
 | `src/Oryndra.Core` | Engine-agnostic C# library: the movement simulation and its seam (`ICollisionQuery`). References no Godot. |
-| `game/` | The Godot 4.7 (.NET) project. Owns input, presentation and the collision query; no movement rules. |
+| `game/` | The Godot 4.7 (.NET) project: **this is the directory to open in Godot** (Project Manager → Import → `game/`). Owns input, presentation and the collision query; no movement rules. |
 | `tests/Oryndra.Core.Tests` | xUnit tests of the core: no engine, no display. |
 | `tests/Oryndra.Game.Tests` | gdUnit4Net tests that run inside a headless Godot. |
+
+Godot never opens the repository root, only `game/`. The engine scans every `.cs`
+file under its project directory, so the core and the tests stay outside it: they
+are plain C#, and Godot has no business compiling them or writing `.uid` files
+next to them. The split is by dependency (what needs the engine), not by feature —
+the movement *is* the game, and it is the part that must be testable without one.
+See `docs/adr/0009-engine-agnostic-movement-core.md`.
 
 ## Build, test and format
 

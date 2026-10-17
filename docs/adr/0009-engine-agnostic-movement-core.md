@@ -14,6 +14,7 @@ ADR-0002 chose C# for a **more robust harness for agents**. This is where that b
 
 - The engine layer carries the conversions: `InputFrame` from input devices, `System.Numerics.Vector3` against `Godot.Vector3`, and Godot physics behind `ICollisionQuery`. That boundary is where engine-unit mismatches get caught.
 - Movement behaviour is proven at the core level, in xUnit, with no engine. The Godot-runtime level exists only for what the engine can break — see `docs/testing.md` for the levels and what each one is allowed to claim.
+- The Godot project lives in `game/` rather than at the repository root: the engine scans every `.cs` file under its project directory, so a root project would pull the core and the tests into the editor, its compilation and a `.uid` file per source. Godot opens `game/`; the rest of the repository is ordinary C#.
 - The simulation advances on a fixed 60 Hz step (`SimulationClock`) and presentation interpolates between ticks. Nothing in the core may read a clock, a random source or a frame rate.
 - A test asserts that the core assembly references no engine assembly, so the boundary cannot rot silently.
 
