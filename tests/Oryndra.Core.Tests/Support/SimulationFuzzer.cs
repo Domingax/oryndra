@@ -52,7 +52,7 @@ public static class SimulationFuzzer
 
     private static InputFrame NextInput(Random random)
     {
-        var angle = random.NextSingle() * MathF.Tau;
+        float angle = random.NextSingle() * MathF.Tau;
         var axis = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
         var magnitude = random.Next(4) switch
         {

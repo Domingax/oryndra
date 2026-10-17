@@ -32,11 +32,11 @@ public sealed class FirstPersonTests
 
         await ISceneRunner.SyncPhysicsFrame;
 
-        var greybox = main.GetNodeOrNull<Node3D>("Greybox");
+        Node3D greybox = main.GetNodeOrNull<Node3D>("Greybox");
         AssertThat(greybox).IsNotNull();
         AssertThat(greybox!.GetChildCount()).IsGreater(0);
 
-        var view = main.GetNodeOrNull<Camera3D>("View");
+        Camera3D view = main.GetNodeOrNull<Camera3D>("View");
         AssertThat(view).IsNotNull();
         AssertThat(view!.Current).IsTrue();
     }
@@ -46,7 +46,7 @@ public sealed class FirstPersonTests
     {
         var main = new Main();
         using var runner = ISceneRunner.Load(main, autoFree: true);
-        var view = main.GetNode<FirstPersonCamera>("View");
+        FirstPersonCamera view = main.GetNode<FirstPersonCamera>("View");
 
         // The first frame's delta can fall a hair under the fixed step, so one
         // awaited frame is not one tick: the smoke test waits two for the same
@@ -54,8 +54,8 @@ public sealed class FirstPersonTests
         await ISceneRunner.SyncPhysicsFrame;
         await ISceneRunner.SyncPhysicsFrame;
 
-        var eye = view.GlobalPosition;
-        var feet = main.State.Position;
+        Vector3 eye = view.GlobalPosition;
+        System.Numerics.Vector3 feet = main.State.Position;
 
         AssertThat(main.State.Grounded).IsTrue();
         AssertThat(eye.Y).IsEqualApprox(feet.Y + view.EyeHeight, 0.01f);
@@ -67,15 +67,15 @@ public sealed class FirstPersonTests
     {
         var main = new Main();
         using var runner = ISceneRunner.Load(main, autoFree: true);
-        var start = main.State.Position;
+        System.Numerics.Vector3 start = main.State.Position;
         main.ReadInput = yaw => MovementInput.Frame(right: 1f, forward: 0f, yaw: yaw, jump: false);
 
-        for (var frame = 0; frame < 40; frame++)
+        for (int frame = 0; frame < 40; frame++)
         {
             await ISceneRunner.SyncPhysicsFrame;
         }
 
-        var view = main.GetNode<Camera3D>("View");
+        Camera3D view = main.GetNode<Camera3D>("View");
         var travelled = new Vector3(
             main.State.Position.X - start.X,
             0f,
@@ -89,10 +89,10 @@ public sealed class FirstPersonTests
     {
         var main = new Main();
         using var runner = ISceneRunner.Load(main, autoFree: true);
-        var jump = true;
+        bool jump = true;
         main.ReadInput = yaw => MovementInput.Frame(right: 0f, forward: 0f, yaw: yaw, jump: jump);
 
-        for (var frame = 0; frame < 5 && main.State.Position.Y <= 0f; frame++)
+        for (int frame = 0; frame < 5 && main.State.Position.Y <= 0f; frame++)
         {
             await ISceneRunner.SyncPhysicsFrame;
         }

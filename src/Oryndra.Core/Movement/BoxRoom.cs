@@ -91,15 +91,7 @@ public sealed class BoxRoom : ICollisionQuery
     public bool Overlaps(Vector3 feet, BodyShape body)
     {
         var volume = Box.BodyVolume(feet, body);
-        foreach (var solid in solids)
-        {
-            if (solid.Intersects(volume))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return solids.Any(solid => solid.Intersects(volume));
     }
 
     /// <inheritdoc />

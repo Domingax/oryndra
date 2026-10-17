@@ -52,7 +52,7 @@ public sealed class Greybox
     /// <summary>Initializes a new instance of the <see cref="Greybox"/> class.</summary>
     public Greybox()
     {
-        foreach (var piece in pieces)
+        foreach (Piece piece in pieces)
         {
             Room.Add(piece.Box);
         }
@@ -67,7 +67,7 @@ public sealed class Greybox
     {
         var root = new Node3D { Name = "Greybox" };
 
-        foreach (var piece in pieces)
+        foreach (Piece piece in pieces)
         {
             root.AddChild(Mesh(piece));
         }
@@ -90,8 +90,8 @@ public sealed class Greybox
 
     private static MeshInstance3D Mesh(Piece piece)
     {
-        var centre = (piece.Box.Min + piece.Box.Max) / 2f;
-        var size = piece.Box.Max - piece.Box.Min;
+        System.Numerics.Vector3 centre = (piece.Box.Min + piece.Box.Max) / 2f;
+        System.Numerics.Vector3 size = piece.Box.Max - piece.Box.Min;
 
         return new MeshInstance3D
         {

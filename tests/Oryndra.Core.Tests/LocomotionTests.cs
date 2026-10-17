@@ -30,9 +30,9 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_WithTheStickAtRest_ReportsIdleAndCoastsToAStop()
     {
-        var simulation = LongRoom();
+        MovementSimulation simulation = LongRoom();
 
-        var state = simulation.RunFor(InputFrame.Idle, ticks: 30);
+        ActorState state = simulation.RunFor(InputFrame.Idle, ticks: 30);
 
         Assert.Equal(Gait.Idle, state.Gait);
         Assert.Equal(Vector3.Zero, state.Velocity);
@@ -41,7 +41,7 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_WithALightPush_WalksAtTheWalkBand()
     {
-        var state = LongRoom().RunFor(Sticks(0.25f), ticks: 30);
+        ActorState state = LongRoom().RunFor(Sticks(0.25f), ticks: 30);
 
         Assert.Equal(Gait.Walk, state.Gait);
         Nearly.Equal(MovementTuning.Default.WalkSpeed, state.Velocity.Z, "a light push is a walk");
@@ -50,7 +50,7 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_WithAFullPush_RunsAtTheRunBand()
     {
-        var state = LongRoom().RunFor(Sticks(1f), ticks: 30);
+        ActorState state = LongRoom().RunFor(Sticks(1f), ticks: 30);
 
         Assert.Equal(Gait.Run, state.Gait);
         Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Z, "a full push is a run");
@@ -59,7 +59,7 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_WhileRunningOnTheGround_FillsTheSprintReserve()
     {
-        var state = LongRoom().RunFor(Sticks(1f), ticks: TicksToFill - 1);
+        ActorState state = LongRoom().RunFor(Sticks(1f), ticks: TicksToFill - 1);
 
         Assert.Equal(Gait.Run, state.Gait);
         Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Z, "a half-built reserve is still a run");
@@ -73,7 +73,7 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_WhenTheReserveIsFull_TurnsTheRunIntoASprint()
     {
-        var state = LongRoom().RunFor(Sticks(1f), ticks: TicksToFill + 20);
+        ActorState state = LongRoom().RunFor(Sticks(1f), ticks: TicksToFill + 20);
 
         Assert.Equal(Gait.Sprint, state.Gait);
         Nearly.Equal(MovementTuning.Default.SprintSpeed, state.Velocity.Z, "a full reserve is a sprint");
@@ -82,7 +82,7 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_WhenTheReserveIsSpent_DropsBackToTheRunBand()
     {
-        var state = LongRoom().RunFor(Sticks(1f), ticks: TicksToFill + TicksOfSprint + 20);
+        ActorState state = LongRoom().RunFor(Sticks(1f), ticks: TicksToFill + TicksOfSprint + 20);
 
         Assert.Equal(Gait.Run, state.Gait);
         Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Z, "a spent reserve runs, it does not walk");
@@ -95,7 +95,7 @@ public sealed class LocomotionTests
             BoxRoom.Room(),
             new ActorState { Position = new Vector3(0f, 5f, 0f) });
 
-        var state = airborne.RunFor(Sticks(1f), ticks: 10);
+        ActorState state = airborne.RunFor(Sticks(1f), ticks: 10);
 
         Assert.False(state.Grounded, "the actor should still be falling");
         Assert.Equal(0f, state.SprintReserve);
@@ -107,7 +107,7 @@ public sealed class LocomotionTests
         var simulation = new MovementSimulation(Ledge(), ActorState.StandingAt(new Vector3(-2f, 0f, 0f)));
         RunOffTheLedge(simulation);
 
-        var state = simulation.Advance(new InputFrame { Jump = true }, Tick);
+        ActorState state = simulation.Advance(new InputFrame { Jump = true }, Tick);
 
         Assert.True(state.Velocity.Y > 0f, $"the jump should still count, was {state.Velocity.Y}");
     }
@@ -118,12 +118,12 @@ public sealed class LocomotionTests
         var simulation = new MovementSimulation(Ledge(), ActorState.StandingAt(new Vector3(-2f, 0f, 0f)));
         RunOffTheLedge(simulation);
 
-        var window = (int)MathF.Ceiling(MovementTuning.Default.CoyoteTime / Tick) + 1;
-        var falling = simulation.RunFor(InputFrame.Idle, ticks: window);
+        int window = (int)MathF.Ceiling(MovementTuning.Default.CoyoteTime / Tick) + 1;
+        ActorState falling = simulation.RunFor(InputFrame.Idle, ticks: window);
 
         Assert.Equal(0f, falling.CoyoteSecondsLeft);
 
-        var late = simulation.Advance(new InputFrame { Jump = true }, Tick);
+        ActorState late = simulation.Advance(new InputFrame { Jump = true }, Tick);
 
         Assert.True(late.Velocity.Y < 0f, $"a jump asked for too late should not fire, was {late.Velocity.Y}");
     }
@@ -136,8 +136,8 @@ public sealed class LocomotionTests
         var simulation = new MovementSimulation(Ledge(), ActorState.StandingAt(new Vector3(-2f, 0f, 0f)));
         RunOffTheLedge(simulation);
 
-        var first = simulation.Advance(new InputFrame { Jump = true }, Tick);
-        var second = simulation.Advance(new InputFrame { Jump = true }, Tick);
+        ActorState first = simulation.Advance(new InputFrame { Jump = true }, Tick);
+        ActorState second = simulation.Advance(new InputFrame { Jump = true }, Tick);
 
         Assert.True(first.Velocity.Y > 0f, $"the first press should jump, was {first.Velocity.Y}");
         Nearly.Equal(
@@ -149,12 +149,12 @@ public sealed class LocomotionTests
     [Fact]
     public void Advance_ThroughAWholeReserve_KeepsTheReserveInItsBounds()
     {
-        var simulation = LongRoom();
-        var input = Sticks(1f);
+        MovementSimulation simulation = LongRoom();
+        InputFrame input = Sticks(1f);
 
-        for (var tick = 0; tick < TicksToFill + TicksOfSprint + 60; tick++)
+        for (int tick = 0; tick < TicksToFill + TicksOfSprint + 60; tick++)
         {
-            var state = simulation.Advance(input, Tick);
+            ActorState state = simulation.Advance(input, Tick);
 
             Assert.InRange(state.SprintReserve, 0f, 1f);
         }
@@ -174,11 +174,11 @@ public sealed class LocomotionTests
     /// <summary>Runs the actor towards +X until it is off the ground; fails if it never is.</summary>
     private static ActorState RunOffTheLedge(MovementSimulation simulation)
     {
-        var input = Simulate.RunningTowards(MathF.PI / 2f);
+        InputFrame input = Simulate.RunningTowards(MathF.PI / 2f);
 
-        for (var tick = 0; tick < 600; tick++)
+        for (int tick = 0; tick < 600; tick++)
         {
-            var state = simulation.Advance(input, Tick);
+            ActorState state = simulation.Advance(input, Tick);
             if (!state.Grounded)
             {
                 return state;

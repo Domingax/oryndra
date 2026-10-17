@@ -86,8 +86,8 @@ public partial class FirstPersonCamera : Camera3D
     /// <param name="delta">The frame's duration, in seconds, for the head's own motion.</param>
     public void Present(ActorState previous, ActorState current, float alpha, double delta)
     {
-        var feet = System.Numerics.Vector3.Lerp(previous.Position, current.Position, alpha);
-        var speed = current.Velocity.Length();
+        System.Numerics.Vector3 feet = System.Numerics.Vector3.Lerp(previous.Position, current.Position, alpha);
+        float speed = current.Velocity.Length();
 
         // A head that never moves reads as a body sliding, so the eye rides a short
         // cycle driven by the distance covered. Only while the actor is on the
@@ -97,9 +97,9 @@ public partial class FirstPersonCamera : Camera3D
             bobPhase = Mathf.PosMod(bobPhase + ((float)(speed * delta) / BobStride), 1f);
         }
 
-        var bob = current.Grounded ? Mathf.Sin(bobPhase * Mathf.Tau) * BobAmplitude : 0f;
+        float bob = current.Grounded ? Mathf.Sin(bobPhase * Mathf.Tau) * BobAmplitude : 0f;
 
-        var eye = feet.ToGodot();
+        Vector3 eye = feet.ToGodot();
         eye.Y += EyeHeight + bob;
         GlobalPosition = eye;
 

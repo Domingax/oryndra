@@ -95,8 +95,8 @@ public partial class Main : Node3D
         // One frame's input drives every tick it catches up on, and only the first
         // of them sees the jump: a press is an event, and a burst of catch-up ticks
         // must not turn it into a held key.
-        var input = ReadInput(view.Yaw);
-        var ticked = false;
+        InputFrame input = ReadInput(view.Yaw);
+        bool ticked = false;
 
         for (var tick = 0; tick < MaxTicksPerFrame && unspentTime >= SimulationClock.FixedDeltaSeconds; tick++)
         {
@@ -127,7 +127,7 @@ public partial class Main : Node3D
     {
         sinceTick += delta;
 
-        var alpha = Mathf.Clamp((float)(sinceTick / SimulationClock.FixedDeltaSeconds), 0f, 1f);
+        float alpha = Mathf.Clamp((float)(sinceTick / SimulationClock.FixedDeltaSeconds), 0f, 1f);
         view.Present(previous, State, alpha, delta);
     }
 

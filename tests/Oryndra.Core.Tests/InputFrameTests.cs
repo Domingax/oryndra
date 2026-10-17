@@ -24,7 +24,7 @@ public sealed class InputFrameTests
     [MemberData(nameof(Yaws))]
     public void WishDirection_WithTheStickForward_PointsAlongTheFacing(float yaw)
     {
-        var direction = Frame(right: 0f, forward: 1f, yaw).WishDirection;
+        Vector3 direction = Frame(right: 0f, forward: 1f, yaw).WishDirection;
         var facing = new Vector3(MathF.Sin(yaw), 0f, MathF.Cos(yaw));
 
         Nearly.Equal(0f, (direction - facing).Length(), "the actor faces +Z at yaw 0 and turns towards +X");
@@ -34,8 +34,8 @@ public sealed class InputFrameTests
     [MemberData(nameof(Yaws))]
     public void WishDirection_WithTheStickRight_PointsToTheRightOfTheView(float yaw)
     {
-        var facing = Frame(right: 0f, forward: 1f, yaw).WishDirection;
-        var right = Frame(right: 1f, forward: 0f, yaw).WishDirection;
+        Vector3 facing = Frame(right: 0f, forward: 1f, yaw).WishDirection;
+        Vector3 right = Frame(right: 1f, forward: 0f, yaw).WishDirection;
 
         Nearly.Equal(1f, right.Length(), "a unit stick asks for a unit direction");
         Nearly.Equal(0f, (right - Vector3.Cross(facing, Vector3.UnitY)).Length(), "the view's right");
