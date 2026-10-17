@@ -16,7 +16,7 @@ It is a **report, not a gate**. `./verify.sh` stays the authority on whether a c
 
 ## Consequences
 
-- CI has two jobs. `verify` is the gate: the same `./verify.sh` as always. `sonar` is the report: it builds, runs the core tests for coverage, and uploads both. Only the default branch and pull requests are analysed, because the free plan offers no branch analysis, and a pull request from a fork is skipped rather than failed, because it carries no secret.
+- CI has two jobs. `verify` is the gate: the same `./verify.sh` as always. `sonar` is the report: it builds, runs the core tests for coverage, and uploads both. Only the default branch and pull requests are analysed, because the free plan offers no branch analysis, and a pull request from a fork is skipped rather than failed, because it carries no secret. The two jobs repeat three steps — the checkout, the SDK, the NuGet cache — rather than sharing a composite action: for two jobs, three duplicated `uses:` lines are cheaper to read than an indirection to follow, and a version bump is a two-line change.
 - The `sonar` job builds with warnings *not* treated as errors: the Sonar rules arrive as build warnings, and a report that fails the build on its own findings is a gate by another name.
 - `SonarQube.Analysis.xml` at the repository root carries what is analysed, what is measured and what is excluded, and CI passes it to the scanner with `/s:`. The project key, the organization and the token are not in it: the key and the organization belong to the CI step, the token to the repository secret.
 - Coverage, as reported, means `src/Oryndra.Core`. A change to the movement rules moves it; a change to the Godot layer does not, and is proven at the boot and runtime levels instead.
