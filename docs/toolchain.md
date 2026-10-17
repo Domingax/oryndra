@@ -11,6 +11,8 @@ Versions of the tools this project builds and runs with, so CI, agents and contr
 | gdUnit4 analyzers | 1.0.0 | `gdUnit4.analyzers` (NuGet) | static analysis of test code |
 | coverlet.collector | 10.1.0 | `coverlet.collector` (NuGet) | the coverage collector the `sonar` CI job runs the core tests with; referenced by the core test project |
 | SonarScanner for .NET | 12.0.0 | `dotnet-sonarscanner` | only in CI, installed by the `sonar` job; never a dependency of `./verify.sh` |
+| Node.js | 26.11.1 | `npx` | runs the Godot MCP server, an agent observability tool; never a dependency of the build or the gate |
+| Godot MCP Runtime | 3.8.1 | `npx` (via `scripts/godot-mcp.sh`) | pinned there; observability only, and no test, job or script of this repository depends on it (`docs/agents/godot-mcp.md`) |
 | GitHub CLI | 2.96.0 | `gh` | used for the issue tracker |
 | Git | system | `git` | |
 | Blender | not installed | `blender` | planned; see `docs/adr/0008-asset-pipeline.md` |

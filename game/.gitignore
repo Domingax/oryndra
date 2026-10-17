@@ -1,0 +1,4 @@
+# Godot MCP Runtime artifacts (docs/agents/godot-mcp.md): the transient bridge's
+# scripts, policies and screenshots land here. The server writes this file itself
+# when it is missing; it is committed so that a run never leaves the tree dirty.
+.mcp/

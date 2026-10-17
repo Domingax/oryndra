@@ -67,3 +67,13 @@ Default five roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-
 ### Domain docs
 
 Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Godot MCP (observability only)
+
+An agent can look at a running game — live scene tree, debug output, screenshots,
+simulated input — through the Godot MCP server wired in `opencode.json`
+(`scripts/godot-mcp.sh`; its artifacts land in `game/.mcp/`). It is
+**observability only**: `./verify.sh` and CI remain the authority, no test and no
+job starts it, and nothing in this repository depends on it. How to start and stop
+it, what it exposes, and the rules: `docs/agents/godot-mcp.md`. Why this server,
+and what was rejected: `docs/adr/0011-godot-mcp-observability.md`.
