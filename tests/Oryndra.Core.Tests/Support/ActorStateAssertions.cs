@@ -15,54 +15,36 @@ internal static class ActorStateAssertions
     /// <param name="because">What the comparison is about, for the failure message.</param>
     public static void AssertBitIdentical(ActorState expected, ActorState actual, string because)
     {
-        var differences = Differences(expected, actual).ToList();
+        var differences = new List<string>();
+
+        Compare(differences, "Position.X", expected.Position.X, actual.Position.X);
+        Compare(differences, "Position.Y", expected.Position.Y, actual.Position.Y);
+        Compare(differences, "Position.Z", expected.Position.Z, actual.Position.Z);
+        Compare(differences, "Velocity.X", expected.Velocity.X, actual.Velocity.X);
+        Compare(differences, "Velocity.Y", expected.Velocity.Y, actual.Velocity.Y);
+        Compare(differences, "Velocity.Z", expected.Velocity.Z, actual.Velocity.Z);
+        Compare(differences, "Yaw", expected.Yaw, actual.Yaw);
+        Compare(differences, "Grounded", expected.Grounded, actual.Grounded);
+
         Assert.True(
             differences.Count == 0,
             $"{because}: expected {expected} but was {actual} ({string.Join(", ", differences)})");
     }
 
-    private static IEnumerable<string> Differences(ActorState expected, ActorState actual)
+    private static void Compare(List<string> differences, string name, float expected, float actual)
     {
-        if (Bits(expected.Position.X) != Bits(actual.Position.X))
+        if (BitConverter.SingleToInt32Bits(expected) != BitConverter.SingleToInt32Bits(actual))
         {
-            yield return $"Position.X {expected.Position.X} != {actual.Position.X}";
-        }
-
-        if (Bits(expected.Position.Y) != Bits(actual.Position.Y))
-        {
-            yield return $"Position.Y {expected.Position.Y} != {actual.Position.Y}";
-        }
-
-        if (Bits(expected.Position.Z) != Bits(actual.Position.Z))
-        {
-            yield return $"Position.Z {expected.Position.Z} != {actual.Position.Z}";
-        }
-
-        if (Bits(expected.Velocity.X) != Bits(actual.Velocity.X))
-        {
-            yield return $"Velocity.X {expected.Velocity.X} != {actual.Velocity.X}";
-        }
-
-        if (Bits(expected.Velocity.Y) != Bits(actual.Velocity.Y))
-        {
-            yield return $"Velocity.Y {expected.Velocity.Y} != {actual.Velocity.Y}";
-        }
-
-        if (Bits(expected.Velocity.Z) != Bits(actual.Velocity.Z))
-        {
-            yield return $"Velocity.Z {expected.Velocity.Z} != {actual.Velocity.Z}";
-        }
-
-        if (Bits(expected.Yaw) != Bits(actual.Yaw))
-        {
-            yield return $"Yaw {expected.Yaw} != {actual.Yaw}";
-        }
-
-        if (expected.Grounded != actual.Grounded)
-        {
-            yield return $"Grounded {expected.Grounded} != {actual.Grounded}";
+            differences.Add($"{name} {expected} != {actual}");
         }
     }
 
-    private static int Bits(float value) => BitConverter.SingleToInt32Bits(value);
+    private static void Compare<T>(List<string> differences, string name, T expected, T actual)
+        where T : IEquatable<T>
+    {
+        if (!expected.Equals(actual))
+        {
+            differences.Add($"{name} {expected} != {actual}");
+        }
+    }
 }

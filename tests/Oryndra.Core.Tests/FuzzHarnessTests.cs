@@ -28,7 +28,7 @@ public sealed class FuzzHarnessTests
     [InlineData(8)]
     public void RandomInputSequences_NeverBreakAnInvariant(int seed)
     {
-        var run = SimulationFuzzer.Run(new FuzzSettings { Seed = seed }, BoxWorld.Room());
+        var run = SimulationFuzzer.Run(new FuzzSettings { Seed = seed }, BoxRoom.Room());
 
         Assert.True(
             run.Healthy,
@@ -44,7 +44,7 @@ public sealed class FuzzHarnessTests
         // The soft-lock invariant, checked from the worst state a fuzz run can
         // leave behind: whatever the actor was doing, it must still be able to run
         // away in at least one direction.
-        var room = BoxWorld.Room();
+        var room = BoxRoom.Room();
         var run = SimulationFuzzer.Run(new FuzzSettings { Seed = seed, Ticks = 3_000 }, room);
         var last = run.States[^1];
 

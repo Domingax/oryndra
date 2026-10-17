@@ -8,7 +8,7 @@ namespace Oryndra.Core.Tests;
 
 /// <summary>
 /// The movement seam's behaviour: what one tick does with a given input, a given
-/// state and a given world.
+/// state and a given collision query.
 /// </summary>
 public sealed class MovementSimulationTests
 {
@@ -17,7 +17,7 @@ public sealed class MovementSimulationTests
     [Fact]
     public void Advance_WithAnIdleFrame_LeavesTheActorStandingExactlyStill()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room(), ActorState.StandingAt(Vector3.Zero));
+        var simulation = new MovementSimulation(BoxRoom.Room(), ActorState.StandingAt(Vector3.Zero));
 
         var state = simulation.Advance(InputFrame.Idle, Tick);
 
@@ -29,7 +29,7 @@ public sealed class MovementSimulationTests
     [Fact]
     public void Advance_WithForwardInput_RunsTowardsPositiveZ()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room(), ActorState.StandingAt(Vector3.Zero));
+        var simulation = new MovementSimulation(BoxRoom.Room(), ActorState.StandingAt(Vector3.Zero));
 
         var state = simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 60);
 
@@ -40,7 +40,7 @@ public sealed class MovementSimulationTests
     [Fact]
     public void Advance_WhenTheActorIsTurned_RunsAlongItsFacing()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room(), ActorState.StandingAt(Vector3.Zero));
+        var simulation = new MovementSimulation(BoxRoom.Room(), ActorState.StandingAt(Vector3.Zero));
 
         var state = simulation.RunFor(Simulate.RunningTowards(MathF.PI / 2f), ticks: 60);
 
@@ -52,7 +52,7 @@ public sealed class MovementSimulationTests
     [Fact]
     public void Advance_WithSustainedInput_ReachesTheTunedSpeed()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room(halfWidth: 20f), ActorState.StandingAt(Vector3.Zero));
+        var simulation = new MovementSimulation(BoxRoom.Room(halfWidth: 20f), ActorState.StandingAt(Vector3.Zero));
 
         var state = simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 120);
 
@@ -63,7 +63,7 @@ public sealed class MovementSimulationTests
     [Fact]
     public void Advance_WhenJumpIsHeld_LeavesTheGround()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room(), ActorState.StandingAt(Vector3.Zero));
+        var simulation = new MovementSimulation(BoxRoom.Room(), ActorState.StandingAt(Vector3.Zero));
 
         var state = simulation.Advance(new InputFrame { Jump = true }, Tick);
 
@@ -76,19 +76,19 @@ public sealed class MovementSimulationTests
     public void Advance_WhenTheActorRunsIntoAWall_StopsOnTheWallFace()
     {
         var tuning = MovementTuning.Default;
-        var world = BoxWorld.Room(halfWidth: 2f);
-        var simulation = new MovementSimulation(world, ActorState.StandingAt(new Vector3(1f, 0f, 0f)), tuning);
+        var room = BoxRoom.Room(halfWidth: 2f);
+        var simulation = new MovementSimulation(room, ActorState.StandingAt(new Vector3(1f, 0f, 0f)), tuning);
 
         var state = simulation.RunFor(Simulate.Moving(right: 1f, forward: 0f), ticks: 120);
 
         Nearly.Equal(2f - tuning.Body.Radius, state.Position.X, "the body should stop with its face on the wall");
-        Assert.False(world.Overlaps(state.Position, tuning.Body), "the actor must not end up inside the wall");
+        Assert.False(room.Overlaps(state.Position, tuning.Body), "the actor must not end up inside the wall");
     }
 
     [Fact]
     public void Advance_ReturnsTheStateItStores()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room());
+        var simulation = new MovementSimulation(BoxRoom.Room());
 
         var state = simulation.Advance(InputFrame.Idle, Tick);
 
@@ -100,13 +100,13 @@ public sealed class MovementSimulationTests
     [InlineData(-1f)]
     public void Advance_WithANonPositiveTick_Throws(float deltaSeconds)
     {
-        var simulation = new MovementSimulation(BoxWorld.Room());
+        var simulation = new MovementSimulation(BoxRoom.Room());
 
         Assert.Throws<ArgumentOutOfRangeException>(() => simulation.Advance(InputFrame.Idle, deltaSeconds));
     }
 
     [Fact]
-    public void Constructor_WithANullWorld_Throws()
+    public void Constructor_WithANullCollisionQuery_Throws()
     {
         Assert.Throws<ArgumentNullException>(() => new MovementSimulation(null!));
     }
@@ -114,7 +114,7 @@ public sealed class MovementSimulationTests
     [Fact]
     public void Reset_PutsTheActorBackAtTheGivenState()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room());
+        var simulation = new MovementSimulation(BoxRoom.Room());
         simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 30);
 
         simulation.Reset(ActorState.StandingAt(Vector3.Zero));

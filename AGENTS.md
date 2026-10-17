@@ -7,15 +7,16 @@ The product requirements are described in `PRD.md`.
 
 | Path | What it is |
 |---|---|
-| `src/Oryndra.Core` | Engine-agnostic C# library: the movement simulation and its seam. References no Godot. |
-| `game/` | The Godot 4.7 (.NET) project. Owns input, presentation and the world query; no movement rules. |
+| `src/Oryndra.Core` | Engine-agnostic C# library: the movement simulation and its seam (`ICollisionQuery`). References no Godot. |
+| `game/` | The Godot 4.7 (.NET) project. Owns input, presentation and the collision query; no movement rules. |
 | `tests/Oryndra.Core.Tests` | xUnit tests of the core: no engine, no display. |
 | `tests/Oryndra.Game.Tests` | gdUnit4Net tests that run inside a headless Godot. |
 
 ## Build, test and format
 
 `./verify.sh` is the gate: restore, build with warnings as errors, format check,
-tests. Run it before calling any change done. CI runs exactly the same script.
+boot the game headlessly, tests. Run it before calling any change done. CI runs
+exactly the same script.
 
 ```bash
 ./verify.sh                                       # everything, using godot-mono from the PATH

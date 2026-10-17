@@ -31,7 +31,7 @@ public sealed class FrameTimeBudgetTests
     [Fact]
     public void Advance_StaysWithinTheFrameBudget()
     {
-        var simulation = new MovementSimulation(BoxWorld.Room());
+        var simulation = new MovementSimulation(BoxRoom.Room());
         var input = new InputFrame
         {
             MoveAxis = new Vector2(1f, 1f),
@@ -66,7 +66,7 @@ public sealed class FrameTimeBudgetTests
         // A cost that grows with the run length (a growing list, a leak, a
         // replayed history) would not show in a single average. Compare an early
         // window with a late one and demand they are in the same league.
-        var simulation = new MovementSimulation(BoxWorld.Room());
+        var simulation = new MovementSimulation(BoxRoom.Room());
         var input = new InputFrame { MoveAxis = new Vector2(0f, 1f), Yaw = 0.1f };
         const int Window = 20_000;
 

@@ -3,48 +3,60 @@
 How a change in oryndra gets proven, and at which level.
 
 `./verify.sh` is the authority: restore, build with warnings as errors, format
-check, tests. If it is green locally, CI should agree; if it is red, nothing else
-matters. CI runs the very same script (`.github/workflows/verify.yml`), so this
-document only has to explain *where* a test belongs, not how to run one.
+check, boot the game headlessly, tests. If it is green locally, CI should agree;
+if it is red, nothing else matters. CI runs the very same script
+(`.github/workflows/verify.yml`), so this document only has to explain *where* a
+test belongs, not how to run one.
 
 ## Test levels
 
 | Level | Lives in | Runs against | Proves | Cost |
 |---|---|---|---|---|
 | Core logic | `tests/Oryndra.Core.Tests` (xUnit) | the engine-agnostic core, in-process | movement rules, determinism, invariants, the frame budget | milliseconds, no engine |
-| Engine runtime | `tests/Oryndra.Game.Tests` (gdUnit4Net) | a headless Godot runtime | the project boots, script bindings work, the simulation seam is wired to the engine | seconds, needs Godot 4.7.2 |
+| Game boot | `./verify.sh` | `game/project.godot`, headlessly | the project runs: main scene, C# assembly and the ready line the first tick prints | a couple of seconds, needs Godot |
+| Engine runtime | `tests/Oryndra.Game.Tests` (gdUnit4Net) | a headless Godot runtime, the game assembly loaded | the game's nodes come up and tick inside a real Godot, and the seam is wired to the engine | seconds, needs Godot |
 
 Two rules keep that table from growing:
 
 - **Movement behaviour is proven at the core level.** If a rule can only be
   exercised through Godot, it is probably living in the wrong layer: the
-  simulation is the thing that decides, the engine layer only converts input and
-  presents state. Adding a move means adding core tests, not runtime tests.
-- **The engine runtime level is for what only the engine can break** — a scene
-  that no longer loads, a script whose class no longer matches its file, an
-  assembly Godot refuses, an engine API used with wrong units. Its tests stay
-  few, because each one costs a Godot boot.
+  simulation decides, the engine layer converts input and presents state. Adding
+  a move means adding core tests, not runtime tests.
+- **The Godot levels are for what only the engine can break** — a scene that no
+  longer loads, a script whose class no longer matches its file, an assembly
+  Godot refuses, an engine API used with wrong units. They stay few, because each
+  one costs a Godot boot.
+
+A test project is its own Godot project, with its own `res://`, so it cannot load
+the game's `Main.tscn`. That is why booting the *project* is asserted by
+`verify.sh` (which greps the ready line `Main` prints on its first tick) and the
+runtime test asserts the *assembly and its nodes* instead.
 
 ## Invariants and fuzzing
 
-Unit tests say what the simulation does for the inputs we thought of; the
-harness in `tests/Oryndra.Core.Tests/Support` says what it must never do for the
-inputs we did not. `SimulationFuzzer` drives the public seam with random input
-sequences and checks four invariants after every tick:
+Unit tests say what the simulation does for the inputs we thought of; the harness
+in `tests/Oryndra.Core.Tests/Support` says what it must never do for the inputs we
+did not. `SimulationFuzzer` drives the public seam with random input sequences and
+checks five things after every tick:
 
 1. the state is finite (no NaN, no infinity);
 2. the body is never left inside solid geometry;
-3. the body never escapes the world's outer bounds;
-4. the actor is never stuck in open space for a whole window of ticks.
+3. the body never leaves the room's outer bounds;
+4. the speed stays within a coarse bound, so nothing feeds itself speed;
+5. the actor is never stuck in open space for a whole window of ticks.
 
 Violations are collected instead of thrown, so a failing seed reads as a report.
 Adding a seed to `FuzzHarnessTests` is the cheap way to widen the net; a new
-invariant belongs in `SimulationFuzzer.Check`.
+invariant belongs in `SimulationFuzzer`'s tick check.
 
-`BoxWorld` is the world those tests run in: blocks, resolved one axis at a time.
-It is deliberately blunt, and deliberately immune to tunnelling — when a fuzz run
-asks "did the actor stay outside the geometry?", the world it asks is not the
-code under test.
+`BoxRoom` is the collision query those tests run against: blocks, resolved one axis
+at a time. It is deliberately blunt, and deliberately immune to tunnelling. Being
+blunt has a limit worth stating: 1–4 ask the same query that handed the
+simulation its position, so they establish that the simulation never puts the body
+where the geometry says it cannot be — it does not invent a position, slip through
+a wall or lose speed through one. A bug inside `BoxRoom` itself is outside what
+the fuzz run can see; the wall and floor behaviour it provides is what the seam
+tests in `MovementSimulationTests` assert.
 
 ## Determinism
 

@@ -5,15 +5,15 @@ using Oryndra.Core.Movement;
 namespace Oryndra.Game;
 
 /// <summary>
-/// The world seam backed by a flat floor at y = 0.
+/// The collision seam backed by a flat floor at y = 0.
 /// </summary>
 /// <remarks>
-/// A placeholder until the greybox world exists, so that the project boots with a
+/// A placeholder until the greybox exists, so that the project boots with a
 /// simulation that can actually stand up. Note what does not change when it is
 /// replaced: the seam itself. That is the point of keeping the simulation
 /// engine-agnostic.
 /// </remarks>
-public sealed class FlatGroundWorld : IWorldQuery
+public sealed class FlatGround : ICollisionQuery
 {
     /// <inheritdoc />
     public BodyMoveResult MoveBody(Vector3 position, Vector3 delta, BodyShape body)

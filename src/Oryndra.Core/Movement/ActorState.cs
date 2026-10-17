@@ -7,9 +7,9 @@ namespace Oryndra.Core.Movement;
 /// </summary>
 /// <remarks>
 /// <see cref="Position"/> is the bottom centre of the actor's body, in metres: it
-/// is the point the actor stands on and the point the world query sweeps. Yaw is
-/// the only rotation the movement model needs, so it is stored as a scalar rather
-/// than a basis.
+/// is the point the actor stands on and the point the collision query sweeps. Yaw
+/// is the only rotation the movement model needs, so it is stored as a scalar
+/// rather than a basis.
 /// </remarks>
 public readonly record struct ActorState
 {

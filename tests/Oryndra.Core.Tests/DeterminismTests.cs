@@ -21,8 +21,8 @@ public sealed class DeterminismTests
     {
         var settings = new FuzzSettings { Seed = 20261017, Ticks = Ticks };
 
-        var first = SimulationFuzzer.Run(settings, BoxWorld.Room());
-        var second = SimulationFuzzer.Run(settings, BoxWorld.Room());
+        var first = SimulationFuzzer.Run(settings, BoxRoom.Room());
+        var second = SimulationFuzzer.Run(settings, BoxRoom.Room());
 
         Assert.Equal(first.States.Count, second.States.Count);
         for (var tick = 0; tick < first.States.Count; tick++)
@@ -35,9 +35,9 @@ public sealed class DeterminismTests
     public void RestartingASimulation_ReplaysTheSameStates()
     {
         var settings = new FuzzSettings { Seed = 42, Ticks = 500 };
-        var world = BoxWorld.Room();
-        var inputs = SimulationFuzzer.Run(settings, world).Inputs;
-        var simulation = new MovementSimulation(world, settings.Start);
+        var room = BoxRoom.Room();
+        var inputs = SimulationFuzzer.Run(settings, room).Inputs;
+        var simulation = new MovementSimulation(room, settings.Start);
 
         var first = inputs.Select(input => simulation.Advance(input, settings.DeltaSeconds)).ToList();
 
@@ -57,10 +57,10 @@ public sealed class DeterminismTests
         // random source, a clock) would drift as soon as a second one runs beside
         // it. This is the cheap way to prove it does not.
         var settings = new FuzzSettings { Seed = 7, Ticks = 400 };
-        var alone = SimulationFuzzer.Run(settings, BoxWorld.Room());
+        var alone = SimulationFuzzer.Run(settings, BoxRoom.Room());
 
-        var left = new MovementSimulation(BoxWorld.Room(), settings.Start);
-        var right = new MovementSimulation(BoxWorld.Room(), settings.Start);
+        var left = new MovementSimulation(BoxRoom.Room(), settings.Start);
+        var right = new MovementSimulation(BoxRoom.Room(), settings.Start);
         for (var tick = 0; tick < alone.Inputs.Count; tick++)
         {
             var a = left.Advance(alone.Inputs[tick], settings.DeltaSeconds);

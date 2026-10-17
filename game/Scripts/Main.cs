@@ -29,7 +29,7 @@ public partial class Main : Node3D
     /// <summary>How many ticks one engine frame may catch up on, before time is dropped.</summary>
     private const int MaxTicksPerFrame = 5;
 
-    private readonly MovementSimulation simulation = new(new FlatGroundWorld());
+    private readonly MovementSimulation simulation = new(new FlatGround());
     private float unspentTime;
 
     /// <summary>Gets the number of ticks the simulation has advanced.</summary>

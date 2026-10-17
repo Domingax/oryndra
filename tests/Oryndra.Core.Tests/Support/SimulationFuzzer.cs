@@ -13,14 +13,22 @@ namespace Oryndra.Core.Tests.Support;
 /// Unit tests say what the simulation does for the inputs we thought of; the fuzz
 /// harness says what it must never do for the inputs we did not. It drives the
 /// simulation exactly as a player would — one <see cref="InputFrame"/> per tick,
-/// through the public seam — and checks four things after every tick:
+/// through the public seam — and checks five things after every tick:
 /// </para>
 /// <list type="number">
 /// <item>the state is finite (no NaN, no infinity);</item>
 /// <item>the body is never left inside solid geometry;</item>
-/// <item>the body never escapes the world's outer bounds;</item>
-/// <item>the actor is never stuck against nothing.</item>
+/// <item>the body never leaves the room's outer bounds;</item>
+/// <item>the speed stays within a coarse bound, so nothing feeds itself speed;</item>
+/// <item>the actor is never stuck in open space for a whole window of ticks.</item>
 /// </list>
+/// <para>
+/// The first four are only as independent as the collision query they ask: the
+/// simulation takes the position that query hands back, so what they establish is
+/// that the simulation never places the body where the geometry says it cannot be
+/// — it does not invent a position, skip a wall or lose speed through one. A bug
+/// inside <see cref="BoxRoom"/> itself is outside what this harness can see.
+/// </para>
 /// <para>
 /// Violations are collected rather than thrown so a failing run reads as a report
 /// instead of a single line.
@@ -28,42 +36,17 @@ namespace Oryndra.Core.Tests.Support;
 /// </remarks>
 public static class SimulationFuzzer
 {
-    /// <summary>Runs <paramref name="settings"/>' seed through <paramref name="world"/> once.</summary>
+    /// <summary>Runs <paramref name="settings"/>' seed against <paramref name="collision"/> once.</summary>
     /// <param name="settings">How long to run, from where, and within which limits.</param>
-    /// <param name="world">The world to move the actor through.</param>
+    /// <param name="collision">The geometry to move the actor through.</param>
     /// <param name="tuning">The tuning to simulate with; defaults to <see cref="MovementTuning.Default"/>.</param>
     /// <returns>The recorded run, including every invariant it broke.</returns>
-    public static FuzzRun Run(FuzzSettings settings, BoxWorld world, MovementTuning? tuning = null)
+    public static FuzzRun Run(FuzzSettings settings, BoxRoom collision, MovementTuning? tuning = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(collision);
 
-        var tuningInUse = tuning ?? MovementTuning.Default;
-        var simulation = new MovementSimulation(world, settings.Start, tuningInUse);
-        var random = new Random(settings.Seed);
-        var softLock = new SoftLockDetector(world, tuningInUse);
-
-        var inputs = new List<InputFrame>(settings.Ticks);
-        var states = new List<ActorState>(settings.Ticks);
-        var violations = new List<string>();
-
-        for (var tick = 0; tick < settings.Ticks && violations.Count < settings.MaxViolations; tick++)
-        {
-            var input = NextInput(random);
-            var previous = simulation.State;
-            var current = simulation.Advance(input, settings.DeltaSeconds);
-
-            inputs.Add(input);
-            states.Add(current);
-            Check(settings, tuningInUse, world, softLock, tick, previous, input, current, violations);
-        }
-
-        return new FuzzRun
-        {
-            Inputs = inputs,
-            States = states,
-            Violations = violations,
-        };
+        return new FuzzSession(settings, collision, tuning ?? MovementTuning.Default).Run();
     }
 
     private static InputFrame NextInput(Random random)
@@ -72,7 +55,7 @@ public static class SimulationFuzzer
         var axis = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
         var magnitude = random.Next(3) switch
         {
-            0 => 0f, // the player lets go
+            0 => 0f, // the player lets go of the stick
             1 => 0.5f,
             _ => 1f,
         };
@@ -85,43 +68,71 @@ public static class SimulationFuzzer
         };
     }
 
-    private static void Check(
-        FuzzSettings settings,
-        MovementTuning tuning,
-        BoxWorld world,
-        SoftLockDetector softLock,
-        int tick,
-        ActorState previous,
-        InputFrame input,
-        ActorState current,
-        List<string> violations)
+    /// <summary>One tick of a run: what went in, and what came out.</summary>
+    private readonly record struct Tick(int Index, ActorState Before, InputFrame Input, ActorState After);
+
+    /// <summary>A single fuzz run, and everything it is checked against.</summary>
+    private sealed class FuzzSession(FuzzSettings settings, BoxRoom collision, MovementTuning tuning)
     {
-        if (!current.IsFinite)
+        private readonly MovementSimulation simulation = new(collision, settings.Start, tuning);
+        private readonly SoftLockDetector softLock = new(collision, tuning);
+        private readonly List<string> violations = [];
+        private readonly List<InputFrame> inputs = [];
+        private readonly List<ActorState> states = [];
+
+        public FuzzRun Run()
         {
-            violations.Add($"tick {tick}: the state is not finite ({current})");
-            return;
+            var random = new Random(settings.Seed);
+
+            for (var index = 0; index < settings.Ticks && violations.Count < settings.MaxViolations; index++)
+            {
+                var input = NextInput(random);
+                var before = simulation.State;
+                var after = simulation.Advance(input, settings.DeltaSeconds);
+
+                inputs.Add(input);
+                states.Add(after);
+                Check(new Tick(index, before, input, after));
+            }
+
+            return new FuzzRun
+            {
+                Inputs = inputs,
+                States = states,
+                Violations = violations,
+            };
         }
 
-        var body = Box.BodyVolume(current.Position, tuning.Body);
-        if (world.Overlaps(current.Position, tuning.Body))
+        private void Check(Tick tick)
         {
-            violations.Add($"tick {tick}: the body is inside solid geometry at {current.Position}");
-        }
-        else if (!world.OuterBounds.Contains(body, tolerance: 1e-3f))
-        {
-            violations.Add($"tick {tick}: the body escaped the world at {current.Position}");
-        }
+            if (!tick.After.IsFinite)
+            {
+                violations.Add($"tick {tick.Index}: the state is not finite ({tick.After})");
+                return;
+            }
 
-        var speed = current.Velocity.Length();
-        if (speed > settings.MaxSpeed)
-        {
-            violations.Add($"tick {tick}: speed {speed:0.###} m/s exceeds the {settings.MaxSpeed} m/s bound");
-        }
+            var body = Box.BodyVolume(tick.After.Position, tuning.Body);
+            if (collision.Overlaps(tick.After.Position, tuning.Body))
+            {
+                violations.Add($"tick {tick.Index}: the body is inside solid geometry at {tick.After.Position}");
+            }
+            else if (!collision.OuterBounds.Contains(body, tolerance: 1e-3f))
+            {
+                violations.Add($"tick {tick.Index}: the body left the room at {tick.After.Position}");
+            }
 
-        if (softLock.Observe(previous, input, current))
-        {
-            violations.Add(
-                $"tick {tick}: the actor stayed stuck in open space for {SoftLockDetector.WindowTicks} ticks at {current.Position}");
+            var speed = tick.After.Velocity.Length();
+            if (speed > settings.MaxSpeed)
+            {
+                violations.Add(
+                    $"tick {tick.Index}: speed {speed:0.###} m/s exceeds the {settings.MaxSpeed} m/s bound");
+            }
+
+            if (softLock.Observe(tick.Before, tick.Input, tick.After))
+            {
+                violations.Add(
+                    $"tick {tick.Index}: the actor stayed stuck in open space for {SoftLockDetector.WindowTicks} ticks at {tick.After.Position}");
+            }
         }
     }
 
@@ -136,7 +147,7 @@ public static class SimulationFuzzer
     /// pushed, so the detector adds up the path travelled over a window and only
     /// complains when that path is empty.
     /// </remarks>
-    private sealed class SoftLockDetector(BoxWorld world, MovementTuning tuning)
+    private sealed class SoftLockDetector(BoxRoom collision, MovementTuning tuning)
     {
         /// <summary>How many ticks of pushed-in-open-space count as a stall.</summary>
         public const int WindowTicks = 30;
@@ -148,19 +159,19 @@ public static class SimulationFuzzer
         private int ticks;
 
         /// <summary>Records one tick and reports whether the run is now stuck.</summary>
-        /// <param name="previous">The state before the tick.</param>
+        /// <param name="before">The state before the tick.</param>
         /// <param name="input">What the player asked for during the tick.</param>
-        /// <param name="current">The state after the tick.</param>
+        /// <param name="after">The state after the tick.</param>
         /// <returns><see langword="true"/> when the actor has been stuck for a whole window.</returns>
-        public bool Observe(ActorState previous, InputFrame input, ActorState current)
+        public bool Observe(ActorState before, InputFrame input, ActorState after)
         {
-            if (!IsPushingIntoOpenSpace(input, current))
+            if (!IsPushingIntoOpenSpace(input, after))
             {
                 Restart();
                 return false;
             }
 
-            var travelled = current.Position - previous.Position;
+            var travelled = after.Position - before.Position;
             path += MathF.Abs(travelled.X) + MathF.Abs(travelled.Z);
             ticks++;
 
@@ -174,15 +185,15 @@ public static class SimulationFuzzer
             return stuck;
         }
 
-        private bool IsPushingIntoOpenSpace(InputFrame input, ActorState current)
+        private bool IsPushingIntoOpenSpace(InputFrame input, ActorState actor)
         {
             var wish = input.WishDirection;
-            if (!current.Grounded || wish == Vector3.Zero)
+            if (!actor.Grounded || wish == Vector3.Zero)
             {
                 return false;
             }
 
-            return !world.Overlaps(current.Position + (wish * ProbeDistance), tuning.Body);
+            return !collision.Overlaps(actor.Position + (wish * ProbeDistance), tuning.Body);
         }
 
         private void Restart()

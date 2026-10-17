@@ -5,13 +5,22 @@ using static GdUnit4.Assertions;
 namespace Oryndra.Game.Tests;
 
 /// <summary>
-/// Proves the project boots: the game's root node comes up inside a headless
-/// Godot runtime and its simulation advances.
+/// Proves the game assembly comes up inside a headless Godot runtime and its
+/// simulation advances.
 /// </summary>
 /// <remarks>
-/// This is the cheapest test that can catch an engine-layer break — a scene that
-/// no longer loads, an assembly Godot refuses, a script whose class name drifted
-/// from its file. The core's own tests cannot see any of those.
+/// <para>
+/// The node is built here rather than loaded from the game project's
+/// <c>Main.tscn</c>: a test project is its own Godot project, with its own
+/// <c>res://</c>, so it cannot load the game's scene. What this level proves is
+/// that the game's C# assembly loads, its nodes tick, and the seam is wired to the
+/// engine — a script whose class name drifted from its file, or an assembly Godot
+/// refuses, fails here.
+/// </para>
+/// <para>
+/// Booting the project itself (project.godot, <c>Main.tscn</c>, the ready line) is
+/// asserted by <c>./verify.sh</c>, which has the game project to run.
+/// </para>
 /// </remarks>
 [RequireGodotRuntime]
 [TestSuite]

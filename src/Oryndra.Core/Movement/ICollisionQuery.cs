@@ -3,15 +3,22 @@ using System.Numerics;
 namespace Oryndra.Core.Movement;
 
 /// <summary>
-/// The movement simulation's whole view of the world: a single swept move.
+/// The movement simulation's whole view of the geometry around the actor: a single
+/// swept move.
 /// </summary>
 /// <remarks>
-/// This is the only seam between the simulation and the engine. Anything richer —
-/// probe results, surface kinds, ladders, ropes — is layered on top of a world
-/// query that implements this method, so the simulation stays testable without an
-/// engine (see docs/testing.md).
+/// <para>
+/// This is the only seam between the simulation and the engine, and it is named
+/// after what it answers rather than after the playable Map (which the glossary
+/// keeps for the environment a Course is laid out on).
+/// </para>
+/// <para>
+/// Anything richer — probe results, surface kinds, ladders, ropes — is layered on
+/// top of a collision query that implements this method, so the simulation stays
+/// testable without an engine (see docs/testing.md).
+/// </para>
 /// </remarks>
-public interface IWorldQuery
+public interface ICollisionQuery
 {
     /// <summary>
     /// Moves an actor's body from <paramref name="position"/> by

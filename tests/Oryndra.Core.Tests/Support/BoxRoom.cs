@@ -5,7 +5,7 @@ using Oryndra.Core.Movement;
 namespace Oryndra.Core.Tests.Support;
 
 /// <summary>
-/// A world made of blocks, used to test the movement seam without an engine.
+/// A collision query made of blocks, used to test the movement seam without an engine.
 /// </summary>
 /// <remarks>
 /// The implementation is deliberately blunt: it resolves one axis at a time and
@@ -14,22 +14,22 @@ namespace Oryndra.Core.Tests.Support;
 /// the fuzz harness can use it as the authority on "did the actor stay outside
 /// the geometry".
 /// </remarks>
-public sealed class BoxWorld : IWorldQuery
+public sealed class BoxRoom : ICollisionQuery
 {
     private readonly List<Box> solids = [];
 
-    /// <summary>Gets the blocks that make up this world.</summary>
+    /// <summary>Gets the blocks that make up this room.</summary>
     public IReadOnlyList<Box> Solids => solids;
 
-    /// <summary>Gets the smallest box containing every block: the world's outer limit.</summary>
-    /// <exception cref="InvalidOperationException">The world has no geometry at all.</exception>
+    /// <summary>Gets the smallest box containing every block: the room's outer limit.</summary>
+    /// <exception cref="InvalidOperationException">The room has no geometry at all.</exception>
     public Box OuterBounds
     {
         get
         {
             if (solids.Count == 0)
             {
-                throw new InvalidOperationException("A world needs at least one block before it can be bounded.");
+                throw new InvalidOperationException("A room needs at least one block before it can be bounded.");
             }
 
             var bounds = solids[0];
@@ -47,10 +47,10 @@ public sealed class BoxWorld : IWorldQuery
     /// <param name="wallHeight">Height of the walls above the floor, in metres.</param>
     /// <param name="thickness">Wall and floor thickness, in metres.</param>
     /// <returns>A room whose floor top sits at y = 0.</returns>
-    public static BoxWorld Room(float halfWidth = 8f, float wallHeight = 4f, float thickness = 0.5f)
+    public static BoxRoom Room(float halfWidth = 8f, float wallHeight = 4f, float thickness = 0.5f)
     {
         var outer = halfWidth + thickness;
-        return new BoxWorld()
+        return new BoxRoom()
             .Add(Box.FromCorners(
                 new Vector3(-outer, -thickness, -outer),
                 new Vector3(outer, 0f, outer)))
@@ -70,8 +70,8 @@ public sealed class BoxWorld : IWorldQuery
 
     /// <summary>Adds a block of solid geometry.</summary>
     /// <param name="box">The block to add.</param>
-    /// <returns>This world, so blocks can be chained.</returns>
-    public BoxWorld Add(Box box)
+    /// <returns>This room, so blocks can be chained.</returns>
+    public BoxRoom Add(Box box)
     {
         solids.Add(box);
         return this;
