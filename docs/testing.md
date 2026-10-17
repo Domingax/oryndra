@@ -10,6 +10,12 @@ test belongs, not how to run one. A second CI job reports a SonarQube Cloud
 analysis beside it, and its quality gate binds the merge; that is a gate, not a
 level — see [The Sonar report](#the-sonar-report).
 
+An agent can also look at a **running** game — the live scene tree, the debug
+output, a screenshot, simulated input — through the Godot MCP server
+(`docs/agents/godot-mcp.md`). That is observability, not a level: it is evidence
+for a person while iterating, no test requires it, and it never decides whether a
+change is acceptable.
+
 ## Test levels
 
 | Level | Lives in | Runs against | Proves | Cost |
