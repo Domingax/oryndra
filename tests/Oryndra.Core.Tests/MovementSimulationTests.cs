@@ -54,10 +54,11 @@ public sealed class MovementSimulationTests
     {
         var simulation = new MovementSimulation(BoxRoom.Room(halfWidth: 20f), ActorState.StandingAt(Vector3.Zero));
 
-        var state = simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 120);
+        // Shorter than the sprint build-up: this test is about the run band.
+        var state = simulation.RunFor(Simulate.Moving(right: 0f, forward: 1f), ticks: 30);
 
-        Nearly.Equal(MovementTuning.Default.MoveSpeed, state.Velocity.Length(), "the actor should be at full speed");
-        Nearly.Equal(MovementTuning.Default.MoveSpeed, state.Velocity.Z, "full speed should be spent going forwards");
+        Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Length(), "the actor should be at full speed");
+        Nearly.Equal(MovementTuning.Default.RunSpeed, state.Velocity.Z, "full speed should be spent going forwards");
     }
 
     [Fact]

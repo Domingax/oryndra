@@ -45,13 +45,14 @@ runtime test asserts the *assembly and its nodes* instead.
 Unit tests say what the simulation does for the inputs we thought of; the harness
 in `tests/Oryndra.Core.Tests/Support` says what it must never do for the inputs we
 did not. `SimulationFuzzer` drives the public seam with random input sequences and
-checks five things after every tick:
+checks six things after every tick:
 
 1. the state is finite (no NaN, no infinity);
 2. the body is never left inside solid geometry;
 3. the body never leaves the room's outer bounds;
 4. the speed stays within a coarse bound, so nothing feeds itself speed;
-5. the actor is never stuck in open space for a whole window of ticks.
+5. the sprint meter stays inside its 0 to 1 range;
+6. the actor is never stuck in open space for a whole window of ticks.
 
 Violations are collected instead of thrown, so a failing seed reads as a report.
 Adding a seed to `FuzzHarnessTests` is the cheap way to widen the net; a new
@@ -100,6 +101,12 @@ The adapter also writes `gdunit4_testadapter_v*/GdUnit4TestRunnerScene.cs` into
 that project on every run. It is generated, so it is git-ignored and declared as
 generated in `.editorconfig`: the format check and the analyzers step over it,
 and no cleanup step is needed to keep the tree honest.
+
+The tests build the game's own nodes rather than a scene file, and they drive the
+shipped seams rather than only the core: the engine collision query is asked to
+stop a body on real floor and wall geometry, the input map is pressed through the
+engine, and the camera's interpolation is read between two ticks. A shape, a
+binding or a node path that drifts is caught here instead of by hand.
 
 ## The Sonar report
 

@@ -25,6 +25,8 @@ internal static class ActorStateAssertions
         Compare(differences, "Velocity.Z", expected.Velocity.Z, actual.Velocity.Z);
         Compare(differences, "Yaw", expected.Yaw, actual.Yaw);
         Compare(differences, "Grounded", expected.Grounded, actual.Grounded);
+        Compare(differences, "SpeedBand", expected.SpeedBand, actual.SpeedBand);
+        Compare(differences, "SprintReserve", expected.SprintReserve, actual.SprintReserve);
 
         Assert.True(
             differences.Count == 0,
@@ -40,9 +42,8 @@ internal static class ActorStateAssertions
     }
 
     private static void Compare<T>(List<string> differences, string name, T expected, T actual)
-        where T : IEquatable<T>
     {
-        if (!expected.Equals(actual))
+        if (!EqualityComparer<T>.Default.Equals(expected, actual))
         {
             differences.Add($"{name} {expected} != {actual}");
         }

@@ -25,6 +25,15 @@ public readonly record struct ActorState
     /// <summary>Gets a value indicating whether the actor is standing on solid ground.</summary>
     public bool Grounded { get; init; }
 
+    /// <summary>Gets the speed band the actor is currently in.</summary>
+    public SpeedBand SpeedBand { get; init; }
+
+    /// <summary>
+    /// Gets the sprint meter, from 0 (empty) to 1 (full). It refills outside the
+    /// sprint band and is spent inside it.
+    /// </summary>
+    public float SprintReserve { get; init; }
+
     /// <summary>
     /// Gets a value indicating whether every part of the state is a finite number.
     /// </summary>
@@ -40,10 +49,16 @@ public readonly record struct ActorState
         && float.IsFinite(Velocity.X)
         && float.IsFinite(Velocity.Y)
         && float.IsFinite(Velocity.Z)
-        && float.IsFinite(Yaw);
+        && float.IsFinite(Yaw)
+        && float.IsFinite(SprintReserve);
 
     /// <summary>Creates a resting state at <paramref name="position"/>.</summary>
     /// <param name="position">The bottom centre of the actor's body, in metres.</param>
-    /// <returns>A state with no velocity, facing +Z.</returns>
-    public static ActorState StandingAt(Vector3 position) => new() { Position = position };
+    /// <returns>A state with no velocity, facing +Z, idle, and a full sprint meter.</returns>
+    public static ActorState StandingAt(Vector3 position) => new()
+    {
+        Position = position,
+        SpeedBand = SpeedBand.Idle,
+        SprintReserve = 1f,
+    };
 }

@@ -13,13 +13,14 @@ namespace Oryndra.Core.Tests.Support;
 /// Unit tests say what the simulation does for the inputs we thought of; the fuzz
 /// harness says what it must never do for the inputs we did not. It drives the
 /// simulation exactly as a player would — one <see cref="InputFrame"/> per tick,
-/// through the public seam — and checks five things after every tick:
+/// through the public seam — and checks six things after every tick:
 /// </para>
 /// <list type="number">
 /// <item>the state is finite (no NaN, no infinity);</item>
 /// <item>the body is never left inside solid geometry;</item>
 /// <item>the body never leaves the room's outer bounds;</item>
 /// <item>the speed stays within a coarse bound, so nothing feeds itself speed;</item>
+/// <item>the sprint meter stays inside its 0 to 1 range;</item>
 /// <item>the actor is never stuck in open space for a whole window of ticks.</item>
 /// </list>
 /// <para>
@@ -126,6 +127,12 @@ public static class SimulationFuzzer
             {
                 violations.Add(
                     $"tick {tick.Index}: speed {speed:0.###} m/s exceeds the {settings.MaxSpeed} m/s bound");
+            }
+
+            if (tick.After.SprintReserve is < 0f or > 1f)
+            {
+                violations.Add(
+                    $"tick {tick.Index}: sprint meter {tick.After.SprintReserve:0.###} left the [0, 1] range");
             }
 
             if (softLock.Observe(tick.Before, tick.Input, tick.After))
